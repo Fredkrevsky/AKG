@@ -6,7 +6,7 @@ Algorithms of Computer Graphics (6th semester BSUIR)
 - [Conan](https://conan.io/) — packet manager for CMake.
 - [SFML](https://www.sfml-dev.org/) — multimedia library.
 
-## Build and run
+## Установка и запуск
 
    ```bash
    pip install conan
