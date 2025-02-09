@@ -35,3 +35,4 @@
 *.json
 build/
 .vscode/
+*.OBJ

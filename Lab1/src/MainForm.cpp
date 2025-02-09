@@ -1,35 +1,34 @@
+#include <SFML/Window.hpp>
 #include <MainForm.hpp>
 #include <algorithm>
+#include <memory>
 
-constexpr static double t = (1.0f + sqrt(5.0f)) / 2.0f;     // Золотое сечение, надо просто для рисования фигуры
+using namespace std::string_literals;
 
-std::vector<Point3D> vertices = {  
-        
-    // Массив вершин фигуры. Поменяешь - будет рисоваться другая
-    
+const std::string FILE_NAME = "head.OBJ";
+
+constexpr static int FPS = 144;
+constexpr static double t = (1.0f + sqrt(5.0f)) / 2.0f;
+static std::vector<Point3D> default_vertices = {      
     Point3D{-1,  t,  0}, Point3D{1,  t,  0}, Point3D{-1, -t,  0}, Point3D{1, -t,  0},
     Point3D{0, -1,  t}, Point3D{0,  1,  t}, Point3D{0, -1, -t}, Point3D{0,  1, -t},
     Point3D{t,  0, -1}, Point3D{t,  0,  1}, Point3D{-t,  0, -1}, Point3D{-t,  0,  1}
 };
 
-std::vector<Face> faces = {      
-    
-    // Массив связей вершин фигуры. Каждый элемент - это плоскость, в данном случае все плоскости треугольники но можешь поменять. 
-    // Числа в векторах это индексы точек в массиве vertices               
-    
+static std::vector<Face> default_faces = {          
     {0, 11, 5}, {0,  5, 1}, {0, 1, 7}, {0, 7, 10}, {0, 10, 11},
     {1, 5,  9}, {5, 11, 4}, {11, 10, 2}, {10, 7, 6}, {7, 1, 8},
     {3, 9, 4}, {3, 4, 2}, {3, 2, 6}, {3, 6, 8}, {3, 8, 9},
     {4, 9, 5}, {2, 4, 11}, {6, 2, 10}, {8, 6, 7}, {9, 8, 1}
 };
 
-// Твоя задача: из файла заполнить эти два массива
-
 
 MainForm::MainForm() 
     : m_window(sf::VideoMode(width, height), "Lab #1") 
 { 
-    m_window.setFramerateLimit(144);
+    m_window.setFramerateLimit(FPS);
+    m_vertices = default_vertices;
+    m_faces = default_faces;
 }
 
 void MainForm::run_main_loop() {
@@ -51,6 +50,15 @@ void MainForm::run_main_loop() {
             else if (event.type == sf::Event::KeyPressed) {
                 on_key_press(event.key.code);
             }
+            else if (event.type == sf::Event::MouseWheelScrolled) {
+                if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
+                    if (event.mouseWheelScroll.delta > 0) {
+                        scale *= scale_sensitivity;
+                    } else {
+                        scale /= scale_sensitivity;
+                    }
+                }
+            }
         }
 
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -61,28 +69,33 @@ void MainForm::run_main_loop() {
             m_angleY = m_old_angleY + mouse_dx * sensitivity;
         }
         
-        // Вершины для отрисовки должны быть в vertices
-        auto rotated_vertices = rotate_vertices(vertices);
-
-        // Грани фигуры должны быть в faces 
-        // Поменяй глобальные массивы на parser.get_faces() и parser.get_vertices(), например
-        draw_vertices(rotated_vertices, faces);
+        auto vertices = m_vertices;
+        rotate_vertices(vertices, m_angleX, m_angleY);
+        move_vertices(vertices, m_posX, m_posY);
+        draw_vertices(vertices, m_faces);
     }
 }
 
 void MainForm::on_key_press(sf::Keyboard::Key code) {
     switch (code){
         case sf::Keyboard::Left: 
-            m_old_angleY += keyboard_sensitivity;
+            m_posX -= keyboard_sensitivity;
             break;
         case sf::Keyboard::Up: 
-            m_old_angleX += keyboard_sensitivity; 
+            m_posY += keyboard_sensitivity; 
             break;
         case sf::Keyboard::Right: 
-            m_old_angleY -= keyboard_sensitivity;
+            m_posX += keyboard_sensitivity;
             break;
         case sf::Keyboard::Down: 
-            m_old_angleX -= keyboard_sensitivity;
+            m_posY -= keyboard_sensitivity;
+            break;
+        case sf::Keyboard::L:
+            load_from_file();
+            m_old_angleX = 0.0;
+            m_old_angleY = 0.0;
+            m_posX = 0.0;
+            m_posY = 0.0;
             break;
         case sf::Keyboard::Q:
             m_window.close();
@@ -92,24 +105,6 @@ void MainForm::on_key_press(sf::Keyboard::Key code) {
     }
     m_angleX = m_old_angleX;
     m_angleY = m_old_angleY;
-}
-
-std::vector<Point3D> MainForm::rotate_vertices(const std::vector<Point3D>& vertices){
-    m_angleX = normalize_angle(m_angleX);
-    m_angleY = normalize_angle(m_angleY);
-    auto rotationX = createRotationX(m_angleX);
-    auto rotationY = createRotationY(m_angleY);
-
-    std::vector<Point3D> rotated_vertices;
-    std::ranges::transform(vertices, std::back_inserter(rotated_vertices), 
-        [&](const auto& vertex) {
-        Point3D rotated = vertex;
-        rotated = rotated * rotationX;
-        rotated = rotated * rotationY;
-        return rotated;
-    });
-
-    return rotated_vertices;
 }
 
 void MainForm::draw_line(sf::VertexArray& vertices, int x1, int y1, int x2, int y2) {
@@ -158,4 +153,34 @@ void MainForm::draw_vertices(const std::vector<Point3D>& vertices, const std::ve
 
     m_window.draw(points);
     m_window.display();
+}
+
+void MainForm::load_from_file() {
+    std::unique_ptr<Parser> parser{nullptr};
+    std::string file_path{FILE_NAME};
+
+    auto get_file_format = [](const std::string& file_path) -> std::string {
+        std::size_t dot_index = file_path.find_last_of(".");
+        if (dot_index == std::string::npos) {
+            return ""s;
+        }
+        return file_path.substr(dot_index);
+    };
+
+    std::string file_format = get_file_format(file_path);
+
+    if (file_format == ".OBJ"){
+        parser.reset(new ParserOBJ());
+    }
+    else if (file_format == ".gltf"){
+        parser.reset(nullptr);
+        return;
+    }
+    else {
+        return;
+    }
+
+    parser->parse_file(file_path);
+    m_vertices = parser->get_vertices();
+    m_faces = parser->get_faces();
 }

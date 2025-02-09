@@ -16,6 +16,7 @@ add_executable(
     src/main.cpp
     src/Matrix.cpp
     src/MainForm.cpp
+    src/Parser.cpp
 )
 
 target_include_directories(
