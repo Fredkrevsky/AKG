@@ -5,9 +5,10 @@
 
 using namespace std::string_literals;
 
-const std::string FILE_NAME = "models/logan.obj";
+constexpr auto FILE_NAME = "models/logan.obj";
 
-constexpr static int FPS = 144;
+constexpr bool points = true;
+constexpr static int FPS = 150;
 constexpr static double t = (1.0 + std::sqrt(5.0)) / 2.0;
 
 static std::vector<Point3D> default_vertices = {      
@@ -24,7 +25,7 @@ static std::vector<Face> default_faces = {
 };
 
 
-MainForm::MainForm() 
+MainForm::MainForm() noexcept
     : m_window(sf::VideoMode(width, height), "Lab #1") 
 { 
     m_window.setFramerateLimit(FPS);
@@ -33,6 +34,14 @@ MainForm::MainForm()
 }
 
 void MainForm::run_main_loop() {
+    if (!m_counter.initialize()){
+        return;
+    }
+
+    sf::Texture texture;
+    texture.create(width, height);
+    sf::Sprite sprite(texture);
+
     sf::Vector2i mouse_press_position{};
 
     while (m_window.isOpen()) {
@@ -69,15 +78,35 @@ void MainForm::run_main_loop() {
             m_angleX = m_old_angleX + mouse_dy * sensitivity;
             m_angleY = m_old_angleY + mouse_dx * sensitivity;
         }
-        
+
         auto vertices = m_vertices;
         rotate_vertices(vertices, m_angleX, m_angleY);
         move_vertices(vertices, m_posX, m_posY);
-        draw_vertices(vertices, m_faces);
+        draw_vertices(vertices);
+        texture.update((uint8_t*)m_bitmap.data());
+
+        m_window.clear();
+        m_window.draw(sprite);
+        m_counter.draw(m_window);
+        m_window.display();
+        m_counter.update();
     }
 }
 
 void MainForm::on_key_press(sf::Keyboard::Key code) {
+    
+    auto reset_position = [&](){
+        m_old_angleX = 0.0;
+        m_old_angleY = 0.0;
+        m_posX = 0.0;
+        m_posY = 0.0;
+    };
+
+    auto load_default = [&](){
+        m_vertices = default_vertices;
+        m_faces = default_faces;
+    };
+
     switch (code){
         case sf::Keyboard::Left: 
             m_posX -= keyboard_sensitivity;
@@ -93,10 +122,11 @@ void MainForm::on_key_press(sf::Keyboard::Key code) {
             break;
         case sf::Keyboard::L:
             load_from_file();
-            m_old_angleX = 0.0;
-            m_old_angleY = 0.0;
-            m_posX = 0.0;
-            m_posY = 0.0;
+            reset_position();
+            break;
+        case sf::Keyboard::D:
+            load_default();
+            reset_position();
             break;
         case sf::Keyboard::Q:
             m_window.close();
@@ -108,7 +138,10 @@ void MainForm::on_key_press(sf::Keyboard::Key code) {
     m_angleY = m_old_angleY;
 }
 
-void MainForm::draw_line(sf::VertexArray& vertices, int x1, int y1, int x2, int y2) {
+void MainForm::draw_line(int x1, int y1, int x2, int y2) {
+    
+    constexpr static uint32_t WHITE = 0xFFFFFFFF;
+
     int dx = abs(x2 - x1);
     int dy = abs(y2 - y1);
     int sx = (x1 < x2) ? 1 : -1;
@@ -116,7 +149,12 @@ void MainForm::draw_line(sf::VertexArray& vertices, int x1, int y1, int x2, int 
     int err = dx - dy;
 
     while (true) {
-        vertices.append(sf::Vertex(sf::Vector2f(x1, y1), sf::Color::White));
+        if (x1 >= 0 && x1 < width && y1 >= 0 && y1 < height) {
+            m_bitmap[y1 * width + x1] = WHITE;
+        }
+        else {
+            break;
+        }
 
         if (x1 == x2 && y1 == y2) break;
 
@@ -132,28 +170,23 @@ void MainForm::draw_line(sf::VertexArray& vertices, int x1, int y1, int x2, int 
     }
 }
 
-void MainForm::draw_vertices(const std::vector<Point3D>& vertices, const std::vector<Face>& faces) {
+void MainForm::draw_vertices(const std::vector<Point3D>& vertices) {
+    std::ranges::fill(m_bitmap, 0);
 
-    m_window.clear();
-
-    sf::VertexArray points(sf::Points);
-
-    for (const auto& face : faces) {
-        for (size_t i = 0; i < face.size(); ++i) {
+    std::ranges::for_each(m_faces, [&, this](const Face& face) {
+        const size_t face_size = face.size();
+        for (size_t i = 0; i < face_size; ++i) {
             const auto& vertex1 = vertices[face[i]];
-            const auto& vertex2 = vertices[face[(i + 1) % face.size()]];
+            const auto& vertex2 = vertices[face[(i + 1) % face_size]];
 
             int x1 = width / 2 + static_cast<int>(vertex1.x * scale);
             int y1 = height / 2 - static_cast<int>(vertex1.y * scale);
             int x2 = width / 2 + static_cast<int>(vertex2.x * scale);
             int y2 = height / 2 - static_cast<int>(vertex2.y * scale);
 
-            draw_line(points, x1, y1, x2, y2);
+            draw_line(x1, y1, x2, y2);
         }
-    }
-
-    m_window.draw(points);
-    m_window.display();
+    });
 }
 
 void MainForm::load_from_file() {

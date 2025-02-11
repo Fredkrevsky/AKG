@@ -17,6 +17,7 @@ add_executable(
     src/Matrix.cpp
     src/MainForm.cpp
     src/Parser.cpp
+    src/FPSCounter.cpp
 )
 
 target_include_directories(

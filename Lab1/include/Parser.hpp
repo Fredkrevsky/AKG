@@ -8,8 +8,8 @@ using Faces = std::vector<Face>;
 
 class Parser {
 public:
-    Parser() = default;
-    virtual ~Parser() = default;
+    Parser() noexcept = default;
+    virtual ~Parser() noexcept = default;
 
     virtual void parse_file(const std::string& file_path) = 0;
     Vertices get_vertices() const;
@@ -23,8 +23,8 @@ protected:
 
 class ParserOBJ final : public Parser {
 public:
-    ParserOBJ() = default;
-    ~ParserOBJ() = default;
+    ParserOBJ() noexcept = default;
+    ~ParserOBJ() noexcept = default;
 
     virtual void parse_file(const std::string& file_path) override;
 };
