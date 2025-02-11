@@ -80,12 +80,13 @@ TransformMatrix createRotationY(double angle) {
     };
 }
 
-constexpr static double TWO_PI = 2.0 * M_PI;
+constexpr double PI = 3.1415926538;
+constexpr static double TWO_PI = 2.0 * PI;
 
 double normalize_angle(double angle) {
-    angle = fmod(angle + M_PI, TWO_PI);
+    angle = fmod(angle + PI, TWO_PI);
     if (angle < 0) {
         angle += TWO_PI;
     }
-    return angle - M_PI;
+    return angle - PI;
 }

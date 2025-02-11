@@ -30,9 +30,12 @@ void ParserOBJ::parse_file(const std::string& file_path) {
         } 
         else if (type == "f") {
             Face face;
-            int vertex_index;
-            while (iss >> vertex_index) {
-                face.push_back(vertex_index - 1);
+            std::string vertex_data;
+            while (iss >> vertex_data) {
+                std::istringstream vertex_stream(vertex_data);
+                std::string vertex_index_str;
+                std::getline(vertex_stream, vertex_index_str, '/');
+                face.push_back(std::stoi(vertex_index_str) - 1);
             }
             m_faces.push_back(face);
         }

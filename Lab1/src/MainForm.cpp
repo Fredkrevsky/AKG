@@ -5,10 +5,11 @@
 
 using namespace std::string_literals;
 
-const std::string FILE_NAME = "head.OBJ";
+const std::string FILE_NAME = "models/logan.obj";
 
 constexpr static int FPS = 144;
-constexpr static double t = (1.0f + sqrt(5.0f)) / 2.0f;
+constexpr static double t = (1.0 + std::sqrt(5.0)) / 2.0;
+
 static std::vector<Point3D> default_vertices = {      
     Point3D{-1,  t,  0}, Point3D{1,  t,  0}, Point3D{-1, -t,  0}, Point3D{1, -t,  0},
     Point3D{0, -1,  t}, Point3D{0,  1,  t}, Point3D{0, -1, -t}, Point3D{0,  1, -t},
@@ -169,7 +170,7 @@ void MainForm::load_from_file() {
 
     std::string file_format = get_file_format(file_path);
 
-    if (file_format == ".OBJ"){
+    if (file_format == ".obj"){
         parser.reset(new ParserOBJ());
     }
     else if (file_format == ".gltf"){
