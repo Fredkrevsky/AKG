@@ -37,6 +37,5 @@ private:
 
     double m_angleX{0.0}, m_old_angleX{0.0};
     double m_angleY{0.0}, m_old_angleY{0.0};
-    double m_posX{0.0}, m_posY{0.0};
     double scale{200.0};
 };

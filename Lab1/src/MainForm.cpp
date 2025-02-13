@@ -6,8 +6,6 @@
 using namespace std::string_literals;
 
 constexpr auto FILE_NAME = "models/logan.obj";
-
-constexpr bool points = true;
 constexpr static int FPS = 150;
 constexpr static double t = (1.0 + std::sqrt(5.0)) / 2.0;
 
@@ -81,7 +79,6 @@ void MainForm::run_main_loop() {
 
         auto vertices = m_vertices;
         rotate_vertices(vertices, m_angleX, m_angleY);
-        move_vertices(vertices, m_posX, m_posY);
         draw_vertices(vertices);
         texture.update((uint8_t*)m_bitmap.data());
 
@@ -98,8 +95,6 @@ void MainForm::on_key_press(sf::Keyboard::Key code) {
     auto reset_position = [&](){
         m_old_angleX = 0.0;
         m_old_angleY = 0.0;
-        m_posX = 0.0;
-        m_posY = 0.0;
     };
 
     auto load_default = [&](){
@@ -109,16 +104,16 @@ void MainForm::on_key_press(sf::Keyboard::Key code) {
 
     switch (code){
         case sf::Keyboard::Left: 
-            m_posX -= keyboard_sensitivity;
+            move_vertices(m_vertices, -keyboard_sensitivity, 0);
             break;
         case sf::Keyboard::Up: 
-            m_posY += keyboard_sensitivity; 
+            move_vertices(m_vertices, 0, keyboard_sensitivity);
             break;
         case sf::Keyboard::Right: 
-            m_posX += keyboard_sensitivity;
+            move_vertices(m_vertices, keyboard_sensitivity, 0);
             break;
         case sf::Keyboard::Down: 
-            m_posY -= keyboard_sensitivity;
+            move_vertices(m_vertices, 0, -keyboard_sensitivity);
             break;
         case sf::Keyboard::L:
             load_from_file();
