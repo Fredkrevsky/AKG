@@ -6,7 +6,6 @@
 #include <span>
 
 using TransformMatrix = std::array<std::array<double, 4>, 4>;
-using Bitmap = std::vector<uint32_t>;
 using Face = std::vector<int>;
 
 constexpr double PI = 3.141592653589793;
@@ -27,6 +26,20 @@ struct Point {
     Point& normalize();
 };
 
+class Bitmap {
+public:
+    Bitmap(int width, int height);
+    
+    const uint8_t* data() const;
+    void clear();
+    void draw_faces(const std::span<Point>& points, const std::span<Face>& faces);
+
+private:
+    std::vector<uint32_t> m_data; 
+    int m_width;
+    int m_height;
+};
+
 TransformMatrix operator*(const TransformMatrix& a, const TransformMatrix& b);
 std::vector<Point> mult(const TransformMatrix& matrix, const std::vector<Point>& points);
 
@@ -35,7 +48,3 @@ TransformMatrix createRotationY(double angle);
 TransformMatrix createScale(double scalar);
 
 double normalize_angle(double angle);
-
-void draw_line(Bitmap& bitmap, int width, int height, int x1, int y1, int x2, int y2);
-void draw_face(Bitmap& bitmap, int width, int height, const std::span<Point>& points, const Face& face);
-void draw_faces(Bitmap& bitmap, int width, int height, const std::span<Point>& points, const std::span<Face>& faces);

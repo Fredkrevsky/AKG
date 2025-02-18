@@ -3,7 +3,6 @@
 #include <memory>
 #include <iostream>
 #include <format>
-#include <execution>
 
 using namespace std::string_literals;
 
@@ -26,7 +25,7 @@ static std::vector<Face> default_faces = {
 
 MainForm::MainForm() noexcept
     : m_window(sf::VideoMode(width, height), "Lab #1") 
-    , m_bitmap(width * height, 0)
+    , m_bitmap(width, height)
 { 
     m_window.setFramerateLimit(FPS);
     m_vertices = default_vertices;
@@ -75,8 +74,8 @@ void MainForm::run_main_loop() {
         update_camera();
 
         auto vertices = transform_vertices(m_vertices);
-        draw_faces(m_bitmap, width, height, vertices, m_faces);
-        texture.update((uint8_t*)m_bitmap.data());
+        m_bitmap.draw_faces(vertices, m_faces);
+        texture.update(m_bitmap.data());
 
         m_window.clear();
         m_window.draw(sprite);
@@ -156,11 +155,8 @@ void MainForm::handle_mouse_rotation() {
 }
 
 void MainForm::handle_keyboard_movement() {
-    Point forward = (target - eye);
-    forward.normalize();
-
-    Point right = up.cross(forward);
-    right.normalize();
+    Point forward = (target - eye).normalize();
+    Point right = up.cross(forward).normalize();
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         eye = eye + forward * camera_speed;

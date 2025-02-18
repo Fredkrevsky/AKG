@@ -4,6 +4,103 @@
 #include <cmath>
 #include <algorithm>
 #include <ranges>
+#include <thread>
+#include <chrono>
+
+using namespace std::chrono_literals;
+
+constexpr static int THREADS = 12;
+
+Bitmap::Bitmap(int width, int height) 
+    : m_data(width * height, 0)
+    , m_width(width)
+    , m_height(height)
+    {}
+
+void Bitmap::clear(){
+    std::ranges::fill(m_data, 0);
+}
+
+const uint8_t* Bitmap::data() const {
+    return reinterpret_cast<const uint8_t*>(m_data.data());
+}
+
+void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& faces) {
+    
+    auto draw_line = [&](std::vector<uint32_t>& data, int x1, int y1, int x2, int y2) {
+
+        const int size = data.size();
+        int dx = abs(x2 - x1);
+        int dy = abs(y2 - y1);
+        int sx = (x1 < x2) ? 1 : -1;
+        int sy = (y1 < y2) ? 1 : -1;
+        int err = dx - dy;
+    
+        while (true) {
+            int index = y1 * m_width + x1;
+            if (index >= 0 && index < size) {
+                data[index] = WHITE;
+            }
+            else {
+                break;
+            }
+    
+            if (x1 == x2 && y1 == y2) break;
+    
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                x1 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y1 += sy;
+            }
+        }
+    };
+    
+    auto draw_face = [&](std::vector<uint32_t>& data, const Face& face) {
+        const size_t face_size = face.size();
+    
+        for (size_t i = 0; i < face_size; ++i) {
+            const auto& point1 = points[face[i]];
+            const auto& point2 = points[face[(i + 1) % face_size]];
+    
+            auto [x1, y1, z1, w1] = point1;
+            auto [x2, y2, z2, w2] = point2;
+            draw_line(data, x1, y1, x2, y2);
+        }
+    };
+    
+    auto draw_partial = [&](auto it_begin, auto it_end){
+        std::ranges::for_each(it_begin, it_end, [&](const Face& face){
+            draw_face(m_data, face);
+        });
+    };
+
+    clear();
+
+    std::vector<std::thread> threads(THREADS);
+
+    const int size = faces.size();
+    int count_per_thread = size / THREADS;
+
+    
+    for (int i = 0; i < THREADS; ++i){
+        int current_size = (i < THREADS - 1)
+        ?   count_per_thread
+        :   size - (THREADS - 1) * count_per_thread;
+        
+        auto it_begin = std::next(faces.begin(), i * count_per_thread);
+        auto it_end = std::next(it_begin, current_size);
+        
+        threads.emplace_back(std::thread(draw_partial, it_begin, it_end));
+    }
+    
+    std::ranges::for_each(threads, [](auto& thread){
+        if (thread.joinable()) thread.join();
+    });
+}
 
 Point Point::operator*(const TransformMatrix& matrix) const {
     return {
@@ -106,58 +203,4 @@ TransformMatrix createScale(double scalar){
 double normalize_angle(double angle) {
     angle = std::fmod(angle + PI, TWO_PI);
     return (angle < 0 ? angle + TWO_PI : angle) - PI;
-}
-
-void draw_line(Bitmap& bitmap, int width, int height, int x1, int y1, int x2, int y2) {
-
-    const int size = bitmap.size();
-    int dx = abs(x2 - x1);
-    int dy = abs(y2 - y1);
-    int sx = (x1 < x2) ? 1 : -1;
-    int sy = (y1 < y2) ? 1 : -1;
-    int err = dx - dy;
-
-    while (true) {
-        int index = y1 * width + x1;
-        if (index >= 0 && index < size) {
-            bitmap[index] = WHITE;
-        }
-        else {
-            break;
-        }
-
-        if (x1 == x2 && y1 == y2) break;
-
-        int e2 = 2 * err;
-        if (e2 > -dy) {
-            err -= dy;
-            x1 += sx;
-        }
-        if (e2 < dx) {
-            err += dx;
-            y1 += sy;
-        }
-    }
-}
-
-void draw_face(Bitmap& bitmap, int width, int height, const std::span<Point>& points, const Face& face) {
-    const size_t face_size = face.size();
-
-    for (size_t i = 0; i < face_size; ++i) {
-        const auto& point1 = points[face[i]];
-        const auto& point2 = points[face[(i + 1) % face_size]];
-
-        auto [x1, y1, z1, w1] = point1;
-        auto [x2, y2, z2, w2] = point2;
-        draw_line(bitmap, width, height, x1, y1, x2, y2);
-    }
-}
-
-void draw_faces(Bitmap& bitmap, int width, int height, const std::span<Point>& points, const std::span<Face>& faces) {
-
-    std::ranges::fill(bitmap, 0);
-
-    std::ranges::for_each(faces, [&](const Face& face){
-        draw_face(bitmap, width, height, points, face);
-    });
 }
