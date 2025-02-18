@@ -2,7 +2,7 @@
 #include <Matrix.hpp>
 #include <string>
 
-using Vertices = std::vector<Point3D>;
+using Vertices = std::vector<Point>;
 using Faces = std::vector<Face>;
 
 

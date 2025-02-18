@@ -5,37 +5,47 @@
 #include <FPSCounter.hpp>
 #include <unordered_set>
 
-constexpr static int width{1600};
-constexpr static int height{900};
-
-using Bitmap = std::array<uint32_t, width * height>;
-
 
 class MainForm final {
-public:
+    public:
     MainForm() noexcept;
     ~MainForm() noexcept = default;
-
+    
     void run_main_loop();
-
-private:
+    
+    private:
     void on_key_press(sf::Keyboard::Key code);
-    void draw_line(int x1, int y1, int x2, int y2);
-    void draw_vertices(const std::vector<Point3D>& vertices);
-    void load_from_file();    
-
-private:
+    void load_from_file();
+    void update_camera();
+    void handle_mouse_rotation();
+    void handle_keyboard_movement();
+    std::vector<Point> transform_vertices(const std::vector<Point>& vertices);
+    
+    private:
     constexpr static double sensitivity{0.01};
     constexpr static double keyboard_sensitivity{0.1};
     constexpr static double scale_sensitivity{1.25};
-    
+    constexpr static double camera_speed{0.1};
+    constexpr static int width{1600};
+    constexpr static int height{900};
+
     sf::RenderWindow m_window;
     Vertices m_vertices;
     Faces m_faces;
     FPSCounter m_counter;
     Bitmap m_bitmap;
 
-    double m_angleX{0.0}, m_old_angleX{0.0};
-    double m_angleY{0.0}, m_old_angleY{0.0};
-    double scale{200.0};
+    Point eye{0, 0, 5, 1};
+    Point target{0, 0, 0, 1};
+    Point up{0, 1, 0, 0};
+
+    double scalar{1.0};
+
+    sf::Vector2i mouse_press_position{};
+    bool is_mouse_pressed{false};
+
+    TransformMatrix m_view_matrix{};
+    TransformMatrix m_projection_matrix{};
+    TransformMatrix m_viewport_matrix{};
+    TransformMatrix m_scale{};
 };

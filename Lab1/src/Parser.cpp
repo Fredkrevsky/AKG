@@ -24,7 +24,7 @@ void ParserOBJ::parse_file(const std::string& file_path) {
         iss >> type;
 
         if (type == "v") {
-            Point3D vertex;
+            Point vertex{0, 0, 0, 1};
             iss >> vertex.x >> vertex.y >> vertex.z;
             m_vertices.push_back(vertex);
         } 
