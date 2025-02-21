@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdint>
 #include <span>
+#include "ThreadPool.hpp"
 
 using TransformMatrix = std::array<std::array<double, 4>, 4>;
 using Face = std::vector<int>;
@@ -32,9 +33,13 @@ public:
     
     const uint8_t* data() const;
     void clear();
-    void draw_faces(const std::span<Point>& points, const std::span<Face>& faces);
+    void draw_faces(const std::span<Point>& points, 
+                    const std::span<Face>& faces, int threads_count);
 
 private:
+    static constexpr int THREADS_COUNT = 1;
+
+    ThreadPool m_thread_pool;
     std::vector<uint32_t> m_data; 
     int m_width;
     int m_height;

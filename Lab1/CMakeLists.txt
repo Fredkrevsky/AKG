@@ -18,6 +18,7 @@ add_executable(
     src/MainForm.cpp
     src/Parser.cpp
     src/FPSCounter.cpp
+    src/ThreadPool.cpp
 )
 
 target_include_directories(

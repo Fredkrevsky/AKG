@@ -6,13 +6,13 @@
 #include <ranges>
 #include <thread>
 #include <chrono>
+#include <future>
 
 using namespace std::chrono_literals;
 
-constexpr static int THREADS = 12;
-
 Bitmap::Bitmap(int width, int height) 
-    : m_data(width * height, 0)
+    : m_thread_pool(THREADS_COUNT)
+    , m_data(width * height, 0)
     , m_width(width)
     , m_height(height)
     {}
@@ -25,7 +25,7 @@ const uint8_t* Bitmap::data() const {
     return reinterpret_cast<const uint8_t*>(m_data.data());
 }
 
-void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& faces) {
+void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& faces, int threads_count=1) {
     
     auto draw_line = [&](std::vector<uint32_t>& data, int x1, int y1, int x2, int y2) {
 
@@ -80,25 +80,27 @@ void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& f
 
     clear();
 
-    std::vector<std::thread> threads(THREADS);
+    std::vector<std::future<std::any>> futures{};
 
     const int size = faces.size();
-    int count_per_thread = size / THREADS;
+    int count_per_thread = size / threads_count;
 
     
-    for (int i = 0; i < THREADS; ++i){
-        int current_size = (i < THREADS - 1)
+    for (int i = 0; i < threads_count; ++i){
+        int current_size = (i < threads_count - 1)
         ?   count_per_thread
-        :   size - (THREADS - 1) * count_per_thread;
+        :   size - (threads_count - 1) * count_per_thread;
         
         auto it_begin = std::next(faces.begin(), i * count_per_thread);
         auto it_end = std::next(it_begin, current_size);
         
-        threads.emplace_back(std::thread(draw_partial, it_begin, it_end));
+        futures.emplace_back(m_thread_pool.add_task(
+            draw_partial, it_begin, it_end
+        ));
     }
     
-    std::ranges::for_each(threads, [](auto& thread){
-        if (thread.joinable()) thread.join();
+    std::ranges::for_each(futures, [](auto& current_future){
+        auto fut = current_future.get();
     });
 }
 

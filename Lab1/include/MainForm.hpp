@@ -1,19 +1,17 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include <Matrix.hpp>
-#include <Parser.hpp>
-#include <FPSCounter.hpp>
-#include <unordered_set>
-
+#include "Matrix.hpp"
+#include "Parser.hpp"
+#include "FPSCounter.hpp"
 
 class MainForm final {
-    public:
+public:
     MainForm() noexcept;
     ~MainForm() noexcept = default;
     
     void run_main_loop();
     
-    private:
+private:
     void on_key_press(sf::Keyboard::Key code);
     void load_from_file();
     void update_camera();
@@ -21,7 +19,7 @@ class MainForm final {
     void handle_keyboard_movement();
     std::vector<Point> transform_vertices(const std::vector<Point>& vertices);
     
-    private:
+private:
     constexpr static double sensitivity{0.01};
     constexpr static double keyboard_sensitivity{0.1};
     constexpr static double scale_sensitivity{1.25};

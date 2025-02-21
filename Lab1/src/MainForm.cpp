@@ -7,7 +7,8 @@
 using namespace std::string_literals;
 
 constexpr auto FILE_NAME = "models/logan.obj";
-constexpr static int FPS = 15000;
+constexpr static int MAX_FPS = 15000;
+constexpr static int THREADS_COUNT = 12;
 constexpr static double t = (1.0 + std::sqrt(5.0)) / 2.0;
 
 static std::vector<Point> default_vertices = {      
@@ -24,10 +25,10 @@ static std::vector<Face> default_faces = {
 };
 
 MainForm::MainForm() noexcept
-    : m_window(sf::VideoMode(width, height), "Lab #1") 
+    : m_window(sf::VideoMode(width, height), "Lab №1") 
     , m_bitmap(width, height)
 { 
-    m_window.setFramerateLimit(FPS);
+    m_window.setFramerateLimit(MAX_FPS);
     m_vertices = default_vertices;
     m_faces = default_faces;
     update_camera();
@@ -74,7 +75,7 @@ void MainForm::run_main_loop() {
         update_camera();
 
         auto vertices = transform_vertices(m_vertices);
-        m_bitmap.draw_faces(vertices, m_faces);
+        m_bitmap.draw_faces(vertices, m_faces, THREADS_COUNT);
         texture.update(m_bitmap.data());
 
         m_window.clear();
@@ -186,7 +187,7 @@ void MainForm::on_key_press(sf::Keyboard::Key code) {
         case sf::Keyboard::L:
             load_from_file();
             break;
-        case sf::Keyboard::D:
+        case sf::Keyboard::K:
             load_default();
             break;
         case sf::Keyboard::Q:
@@ -215,14 +216,15 @@ void MainForm::load_from_file() {
         parser.reset(new ParserOBJ());
     }
     else if (file_format == ".gltf"){
-        parser.reset(nullptr);
-        return;
+        parser.reset(nullptr);            //Implement GLTF parser
     }
     else {
-        return;
+        parser.reset(nullptr);
     }
 
-    parser->parse_file(file_path);
-    m_vertices = parser->get_vertices();
-    m_faces = parser->get_faces();
+    if (parser) {
+        parser->parse_file(file_path);
+        m_vertices = parser->get_vertices();
+        m_faces = parser->get_faces();
+    }
 }
