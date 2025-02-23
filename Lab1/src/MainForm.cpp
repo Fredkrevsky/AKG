@@ -7,7 +7,6 @@
 using namespace std::string_literals;
 
 constexpr auto FILE_NAME = "models/logan.obj";
-constexpr static int MAX_FPS = 15000;
 constexpr static int THREADS_COUNT = 12;
 constexpr static double t = (1.0 + std::sqrt(5.0)) / 2.0;
 
@@ -28,10 +27,9 @@ MainForm::MainForm() noexcept
     : m_window(sf::VideoMode(width, height), "Lab №1") 
     , m_bitmap(width, height)
 { 
-    m_window.setFramerateLimit(MAX_FPS);
     m_vertices = default_vertices;
     m_faces = default_faces;
-    update_camera();
+    m_window.setMouseCursorVisible(false);
 }
 
 void MainForm::run_main_loop() {
@@ -51,28 +49,20 @@ void MainForm::run_main_loop() {
             }
             else if (event.type == sf::Event::MouseButtonPressed) {
                 mouse_press_position = sf::Mouse::getPosition(m_window);
-                is_mouse_pressed = true;
-            }
-            else if (event.type == sf::Event::MouseButtonReleased) {
-                is_mouse_pressed = false;
             }
             else if (event.type == sf::Event::KeyPressed) {
                 on_key_press(event.key.code);
             }
             else if (event.type == sf::Event::MouseWheelScrolled) {
                 if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
-                    if (event.mouseWheelScroll.delta > 0) {
-                        scalar *= 1.2;
-                    } else {
-                        scalar /= 1.2;
-                    }
+                    bool is_getting_closer = event.mouseWheelScroll.delta > 0;
+                    m_camera.scale(is_getting_closer);
                 }
             }
         }
 
         handle_mouse_rotation();
         handle_keyboard_movement();
-        update_camera();
 
         auto vertices = transform_vertices(m_vertices);
         m_bitmap.draw_faces(vertices, m_faces, THREADS_COUNT);
@@ -86,49 +76,18 @@ void MainForm::run_main_loop() {
     }
 }
 
-void MainForm::update_camera() {
-    Point ZAxis = (eye - target).normalize();
-    Point XAxis = up.cross(ZAxis).normalize();
-    Point YAxis = ZAxis.cross(XAxis).normalize();
-
-    m_view_matrix = {{
-        {XAxis.x, XAxis.y, XAxis.z, -XAxis.dot(eye)},
-        {YAxis.x, YAxis.y, YAxis.z, -YAxis.dot(eye)},
-        {ZAxis.x, ZAxis.y, ZAxis.z, -ZAxis.dot(eye)},
-        {0, 0, 0, 1}
-    }};
-
-    double znear = 0.01; 
-    double zfar = 100.0; 
-    double aspect = static_cast<double>(width) / height; 
-    double fov = 2.0 * PI / 3.0;
-
-    m_projection_matrix = {{
-        {1.0 / (aspect * std::tan(fov / 2.0)), 0, 0, 0},
-        {0, 1.0 / std::tan(fov / 2.0), 0, 0},
-        {0, 0, zfar / (znear - zfar), zfar * znear / (znear - zfar)},
-        {0, 0, -1, 0}
-    }};
-
-    m_viewport_matrix = {{
-        {width / 2, 0, 0, width / 2},
-        {0, -height / 2, 0, height / 2},
-        {0, 0, 1, 0},
-        {0, 0, 0, 1}
-    }};
-
-    m_scale = createScale(scalar); 
-}
 
 std::vector<Point> MainForm::transform_vertices(const std::vector<Point>& vertices) {
     std::vector<Point> transformed_vertices;
-    TransformMatrix transform_matrix = m_viewport_matrix * m_projection_matrix * m_view_matrix * m_scale;
 
-    std::transform(vertices.begin(), vertices.end(), std::back_inserter(transformed_vertices), 
+    TransformMatrix transform_matrix = m_camera.get_transform_matrix();
+
+    std::ranges::transform(vertices, std::back_inserter(transformed_vertices), 
         [&](const Point& vertex)
     {
         auto transformed_vertex = vertex * transform_matrix;
-        transformed_vertex = transformed_vertex * (1 / transformed_vertex.w);
+        double w = transformed_vertex.w;
+        transformed_vertex = transformed_vertex * (1 / w);
         return transformed_vertex;
     });
 
@@ -136,44 +95,35 @@ std::vector<Point> MainForm::transform_vertices(const std::vector<Point>& vertic
 }
 
 void MainForm::handle_mouse_rotation() {
-    if (is_mouse_pressed) {
-        auto mouse_position = sf::Mouse::getPosition(m_window);
+    auto mouse_position = sf::Mouse::getPosition(m_window);
+    auto [mouse_x, mouse_y] = mouse_position;
+
+    if (mouse_x >= 0 && mouse_y >= 0 && 
+        mouse_x <= width && mouse_y <= height)
+    {
         auto [mouse_dx, mouse_dy] = mouse_position - mouse_press_position;
-
+    
         if (mouse_dx != 0 || mouse_dy != 0){
-            double angleX = mouse_dy * sensitivity;
-            double angleY = mouse_dx * sensitivity;
-
-            auto rotationX = createRotationX(angleX);
-            auto rotationY = createRotationY(angleY);
-            auto rotation = rotationX * rotationY;
-
-            eye = eye * rotation;
-            up = up * rotation;
+            double angle_x = mouse_dy * sensitivity;
+            double angle_y = mouse_dx * sensitivity;
+            m_camera.rotate({angle_x, angle_y, 0.0, 0.0});
         }
         mouse_press_position = mouse_position;
     }
 }
 
 void MainForm::handle_keyboard_movement() {
-    Point forward = (target - eye).normalize();
-    Point right = up.cross(forward).normalize();
-
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        eye = eye + forward * camera_speed;
-        target = target + forward * camera_speed;
+        m_camera.move(MoveDirection::FORWARD);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        eye = eye - forward * camera_speed;
-        target = target - forward * camera_speed;
+        m_camera.move(MoveDirection::BACK);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        eye = eye - right * camera_speed;
-        target = target - right * camera_speed;
+        m_camera.move(MoveDirection::LEFT);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        eye = eye + right * camera_speed;
-        target = target + right * camera_speed;
+        m_camera.move(MoveDirection::RIGHT);
     }
 }
 
@@ -183,17 +133,18 @@ void MainForm::on_key_press(sf::Keyboard::Key code) {
         m_faces = default_faces;
     };
 
-    switch (code){
+    switch (code)
+    {
         case sf::Keyboard::L:
             load_from_file();
             break;
+
         case sf::Keyboard::K:
             load_default();
             break;
+
         case sf::Keyboard::Q:
             m_window.close();
-            break;
-        default: 
             break;
     }
 }
@@ -214,9 +165,6 @@ void MainForm::load_from_file() {
 
     if (file_format == ".obj"){
         parser.reset(new ParserOBJ());
-    }
-    else if (file_format == ".gltf"){
-        parser.reset(nullptr);            //Implement GLTF parser
     }
     else {
         parser.reset(nullptr);
