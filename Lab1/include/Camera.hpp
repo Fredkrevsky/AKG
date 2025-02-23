@@ -1,5 +1,6 @@
 #pragma once
 #include "Matrix.hpp"
+#include <vector>
 
 enum class MoveDirection {
     FORWARD,
@@ -14,12 +15,14 @@ public:
     ~Camera() noexcept = default;
 
     void move(MoveDirection direction);
-    void rotate(const Point& vec);
+    void rotate(double angle_x, double angle_y);
     void scale(bool is_getting_closer);
 
+    std::vector<Point> get_vertices(const std::vector<Point>& vertices);
     TransformMatrix get_transform_matrix();
 
 private:
+    constexpr static double rotation_sensitivity{0.5};
     constexpr static double scale_sensitivity{1.25};
     constexpr static double camera_speed{0.1};
     constexpr static double width{1600.0};

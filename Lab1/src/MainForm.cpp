@@ -41,14 +41,13 @@ void MainForm::run_main_loop() {
     texture.create(width, height);
     sf::Sprite sprite(texture);
 
+    sf::Mouse::setPosition(center, m_window);
+
     while (m_window.isOpen()) {
         sf::Event event;
         while (m_window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 m_window.close();
-            }
-            else if (event.type == sf::Event::MouseButtonPressed) {
-                mouse_press_position = sf::Mouse::getPosition(m_window);
             }
             else if (event.type == sf::Event::KeyPressed) {
                 on_key_press(event.key.code);
@@ -64,7 +63,7 @@ void MainForm::run_main_loop() {
         handle_mouse_rotation();
         handle_keyboard_movement();
 
-        auto vertices = transform_vertices(m_vertices);
+        auto vertices = m_camera.get_vertices(m_vertices);
         m_bitmap.draw_faces(vertices, m_faces, THREADS_COUNT);
         texture.update(m_bitmap.data());
 
@@ -76,39 +75,18 @@ void MainForm::run_main_loop() {
     }
 }
 
-
-std::vector<Point> MainForm::transform_vertices(const std::vector<Point>& vertices) {
-    std::vector<Point> transformed_vertices;
-
-    TransformMatrix transform_matrix = m_camera.get_transform_matrix();
-
-    std::ranges::transform(vertices, std::back_inserter(transformed_vertices), 
-        [&](const Point& vertex)
-    {
-        auto transformed_vertex = vertex * transform_matrix;
-        double w = transformed_vertex.w;
-        transformed_vertex = transformed_vertex * (1 / w);
-        return transformed_vertex;
-    });
-
-    return transformed_vertices;
-}
-
 void MainForm::handle_mouse_rotation() {
-    auto mouse_position = sf::Mouse::getPosition(m_window);
-    auto [mouse_x, mouse_y] = mouse_position;
+    sf::Vector2i mouse_position = sf::Mouse::getPosition(m_window);
 
-    if (mouse_x >= 0 && mouse_y >= 0 && 
-        mouse_x <= width && mouse_y <= height)
-    {
-        auto [mouse_dx, mouse_dy] = mouse_position - mouse_press_position;
-    
-        if (mouse_dx != 0 || mouse_dy != 0){
-            double angle_x = mouse_dy * sensitivity;
-            double angle_y = mouse_dx * sensitivity;
-            m_camera.rotate({angle_x, angle_y, 0.0, 0.0});
-        }
-        mouse_press_position = mouse_position;
+    int deltaX = center.x - mouse_position.x;
+    int deltaY = center.y - mouse_position.y;
+
+    if (deltaX != 0 || deltaY != 0) {
+        double angle_x = deltaX * sensitivity;
+        double angle_y = deltaY * sensitivity;
+        m_camera.rotate(angle_x, angle_y);
+
+        sf::Mouse::setPosition(center, m_window);
     }
 }
 

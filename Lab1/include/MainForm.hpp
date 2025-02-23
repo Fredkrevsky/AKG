@@ -17,7 +17,6 @@ private:
     void load_from_file();
     void handle_mouse_rotation();
     void handle_keyboard_movement();
-    std::vector<Point> transform_vertices(const std::vector<Point>& vertices);
     
 private:
     constexpr static double sensitivity{0.01};
@@ -33,4 +32,5 @@ private:
     Camera m_camera;
 
     sf::Vector2i mouse_press_position{};
+    sf::Vector2i center{width / 2, height / 2};
 };

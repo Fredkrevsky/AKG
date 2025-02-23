@@ -17,27 +17,30 @@ void Camera::move(MoveDirection direction) {
             break;
 
         case MoveDirection::LEFT:
-            eye = eye - right * camera_speed;
-            target = target - right * camera_speed;
+            eye = eye + right * camera_speed;
+            target = target + right * camera_speed;
             break;
 
         case MoveDirection::RIGHT:
-            eye = eye + right * camera_speed;
-            target = target + right * camera_speed;
+            eye = eye - right * camera_speed;
+            target = target - right * camera_speed;
             break;
     }
 }
 
-void Camera::rotate(const Point& vec) {
-    double angle_x = vec.x;
-    double angle_y = vec.y;
+void Camera::rotate(double deltaX, double deltaY) {
+    Point forward = (target - eye).normalize();
+    Point right = up.cross(forward).normalize();
 
-    auto rotationX = createRotationX(angle_x);
-    auto rotationY = createRotationY(angle_y);
-    auto rotation = rotationX * rotationY;
+    auto rotationY = createRotationY(deltaX * rotation_sensitivity);
+    forward = forward * rotationY;
+    up = up * rotationY;
 
-    eye = eye * rotation;
-    up = up * rotation;
+    auto rotationX = createRotationX(deltaY * rotation_sensitivity);
+    forward = forward * rotationX;
+    up = up * rotationX;
+
+    target = eye + forward;
 }
 
 void Camera::scale(bool is_getting_closer) {
@@ -88,4 +91,21 @@ TransformMatrix Camera::get_transform_matrix()
     }}; 
 
     return viewport_matrix * projection_matrix * view_matrix * scale_matrix;
+}
+
+std::vector<Point> Camera::get_vertices(const std::vector<Point>& vertices) {
+    std::vector<Point> transformed_vertices;
+
+    TransformMatrix transform_matrix = get_transform_matrix();
+
+    std::ranges::transform(vertices, std::back_inserter(transformed_vertices), 
+        [&](const Point& vertex)
+    {
+        auto transformed_vertex = vertex * transform_matrix;
+        double w = transformed_vertex.w;
+        transformed_vertex = transformed_vertex * (1 / w);
+        return transformed_vertex;
+    });
+
+    return transformed_vertices;
 }
