@@ -11,8 +11,7 @@
 using namespace std::chrono_literals;
 
 Bitmap::Bitmap(int width, int height) 
-    : m_thread_pool(THREADS_COUNT)
-    , m_data(width * height, 0)
+    : m_data(width * height, 0)
     , m_width(width)
     , m_height(height)
     {}
@@ -25,37 +24,31 @@ const uint8_t* Bitmap::data() const {
     return reinterpret_cast<const uint8_t*>(m_data.data());
 }
 
-void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& faces, int threads_count=1) {
+void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& faces) {
     
     auto draw_line = [&](std::vector<uint32_t>& data, int x1, int y1, int x2, int y2) {
-
-        const int size = data.size();
+    
         int dx = abs(x2 - x1);
         int dy = abs(y2 - y1);
         int sx = (x1 < x2) ? 1 : -1;
         int sy = (y1 < y2) ? 1 : -1;
         int err = dx - dy;
     
+    
         while (true) {
-            int index = y1 * m_width + x1;
-            if (index >= 0 && index < size) {
+            if (x1 >= 0 && x1 < m_width && y1 >= 0 && y1 < m_height){
+                int index = y1 * m_width + x1;
                 data[index] = WHITE;
             }
-            else {
+            else{
                 break;
             }
     
             if (x1 == x2 && y1 == y2) break;
     
             int e2 = 2 * err;
-            if (e2 > -dy) {
-                err -= dy;
-                x1 += sx;
-            }
-            if (e2 < dx) {
-                err += dx;
-                y1 += sy;
-            }
+            if (e2 > -dy) { err -= dy; x1 += sx; }
+            if (e2 < dx) { err += dx; y1 += sy; }
         }
     };
     
@@ -83,18 +76,18 @@ void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& f
     std::vector<std::future<std::any>> futures{};
 
     const int size = faces.size();
-    int count_per_thread = size / threads_count;
+    int count_per_thread = size / THREADS_COUNT;
 
     
-    for (int i = 0; i < threads_count; ++i){
-        int current_size = (i < threads_count - 1)
+    for (int i = 0; i < THREADS_COUNT; ++i){
+        int current_size = (i < THREADS_COUNT - 1)
         ?   count_per_thread
-        :   size - (threads_count - 1) * count_per_thread;
+        :   size - (THREADS_COUNT - 1) * count_per_thread;
         
         auto it_begin = std::next(faces.begin(), i * count_per_thread);
         auto it_end = std::next(it_begin, current_size);
         
-        futures.emplace_back(m_thread_pool.add_task(
+        futures.emplace_back(thread_pool.add_task(
             draw_partial, it_begin, it_end
         ));
     }
@@ -109,7 +102,7 @@ Point Point::operator*(const TransformMatrix& matrix) const {
         matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z + matrix[0][3] * w,
         matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z + matrix[1][3] * w,
         matrix[2][0] * x + matrix[2][1] * y + matrix[2][2] * z + matrix[2][3] * w,
-        matrix[3][0] * x + matrix[3][1] * y + matrix[3][2] * z + matrix[3][3] * w,
+        matrix[3][0] * x + matrix[3][1] * y + matrix[3][2] * z + matrix[3][3] * w
     };
 }
 
@@ -140,21 +133,31 @@ Point Point::operator*(double scalar) const {
 
 Point& Point::normalize() {
     double length = std::sqrt(x * x + y * y + z * z);
-
-    if (length == 0) return *this;
-
-    x /= length;
-    y /= length;
-    z /= length;
-
+    if (length > 1e-6) { 
+        x /= length;
+        y /= length;
+        z /= length;
+    } else { 
+        x = y = 0;
+        z = 1;
+    }
     return *this;
+}
+
+Point operator*(const TransformMatrix& matrix, const Point& point) {
+    Point result{
+        matrix[0][0] * point.x + matrix[0][1] * point.y + matrix[0][2] * point.z + matrix[0][3] * point.w,
+        matrix[1][0] * point.x + matrix[1][1] * point.y + matrix[1][2] * point.z + matrix[1][3] * point.w,
+        matrix[2][0] * point.x + matrix[2][1] * point.y + matrix[2][2] * point.z + matrix[2][3] * point.w,
+        matrix[3][0] * point.x + matrix[3][1] * point.y + matrix[3][2] * point.z + matrix[3][3] * point.w
+    };
+    return result;
 }
 
 TransformMatrix operator*(const TransformMatrix& a, const TransformMatrix& b) {
     TransformMatrix result{};
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            result[i][j] = 0;
             for (int k = 0; k < 4; ++k) {
                 result[i][j] += a[i][k] * b[k][j];
             }
@@ -164,12 +167,13 @@ TransformMatrix operator*(const TransformMatrix& a, const TransformMatrix& b) {
 }
 
 std::vector<Point> mult(const TransformMatrix& matrix, const std::vector<Point>& points) {
-    std::vector<Point> result;
-    for (const auto& point : points) {
-        result.push_back(point * matrix);
-    }
+    std::vector<Point> result{};
+    std::ranges::transform(points, std::back_inserter(result), [&](const Point& point){
+        return matrix * point;
+    });
     return result;
 }
+
 
 TransformMatrix createRotationX(double angle) {
     double c = std::cos(angle);
@@ -203,6 +207,8 @@ TransformMatrix createScale(double scalar){
 }
 
 double normalize_angle(double angle) {
-    angle = std::fmod(angle + PI, TWO_PI);
-    return (angle < 0 ? angle + TWO_PI : angle) - PI;
+    angle = std::fmod(angle, TWO_PI);
+    if (angle > PI) angle -= TWO_PI;
+    if (angle < -PI) angle += TWO_PI;
+    return angle;
 }

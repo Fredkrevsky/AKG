@@ -29,19 +29,26 @@ void Camera::move(MoveDirection direction) {
 }
 
 void Camera::rotate(double deltaX, double deltaY) {
+    constexpr double max_pitch = 89.0;
+
     Point forward = (target - eye).normalize();
     Point right = up.cross(forward).normalize();
 
-    auto rotationY = createRotationY(deltaX * rotation_sensitivity);
+    TransformMatrix rotationY = createRotationY(deltaX * rotation_sensitivity);
     forward = forward * rotationY;
-    up = up * rotationY;
 
-    auto rotationX = createRotationX(deltaY * rotation_sensitivity);
-    forward = forward * rotationX;
-    up = up * rotationX;
+    double pitch = std::asin(forward.y) * (180.0 / M_PI);
+    double newPitch = pitch + deltaY * rotation_sensitivity;
+
+    if (newPitch > max_pitch) newPitch = max_pitch;
+    if (newPitch < -max_pitch) newPitch = -max_pitch;
+
+    forward.y = std::sin(newPitch * (M_PI / 180.0));
+    forward = forward.normalize();
 
     target = eye + forward;
 }
+
 
 void Camera::scale(bool is_getting_closer) {
     if (is_getting_closer){
@@ -69,11 +76,12 @@ TransformMatrix Camera::get_transform_matrix()
         {0, 0, 0, 1}
     }};
 
+    double f = 1.0 / std::tan(fov * 0.5);
     TransformMatrix projection_matrix = {{
-        {1.0 / (aspect * std::tan(fov / 2.0)), 0, 0, 0},
-        {0, 1.0 / std::tan(fov / 2.0), 0, 0},
+        {f / aspect, 0,  0,  0},
+        {0, f,  0,  0},
         {0, 0, (zfar + znear) / (znear - zfar), 2 * zfar * znear / (znear - zfar)},
-        {0, 0, -1, 0}
+        {0, 0, -1,  0}
     }};
 
     TransformMatrix viewport_matrix = {{
@@ -93,7 +101,23 @@ TransformMatrix Camera::get_transform_matrix()
     return viewport_matrix * projection_matrix * view_matrix * scale_matrix;
 }
 
-std::vector<Point> Camera::get_vertices(const std::vector<Point>& vertices) {
+Point Camera::get_eye() const {
+    return eye;
+}
+
+Point Camera::get_target() const {
+    return target;
+}
+
+Point Camera::get_up() const {
+    return up;
+}
+
+double Camera::get_scale() const {
+    return scale_factor;
+}
+
+std::vector<Point> Camera::transform_vertices(const std::vector<Point>& vertices) {
     std::vector<Point> transformed_vertices;
 
     TransformMatrix transform_matrix = get_transform_matrix();

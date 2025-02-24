@@ -4,6 +4,7 @@
 #include "Matrix.hpp"
 #include "Parser.hpp"
 #include "FPSCounter.hpp"
+#include "Logger.hpp"
 
 class MainForm final {
 public:
@@ -27,9 +28,11 @@ private:
     sf::RenderWindow m_window;
     Vertices m_vertices;
     Faces m_faces;
-    FPSCounter m_counter;
     Bitmap m_bitmap;
-    Camera m_camera;
+    
+    std::shared_ptr<FPSCounter> m_counter;
+    std::shared_ptr<Camera> m_camera;
+    std::shared_ptr<Logger> m_logger;
 
     sf::Vector2i mouse_press_position{};
     sf::Vector2i center{width / 2, height / 2};

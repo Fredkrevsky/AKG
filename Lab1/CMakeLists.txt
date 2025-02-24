@@ -20,6 +20,7 @@ add_executable(
     src/FPSCounter.cpp
     src/ThreadPool.cpp
     src/Camera.cpp
+    src/Logger.cpp
 )
 
 target_include_directories(

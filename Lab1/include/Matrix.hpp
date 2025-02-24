@@ -11,8 +11,10 @@ using Face = std::vector<int>;
 
 constexpr double PI = 3.141592653589793;
 constexpr double TWO_PI = 2.0 * PI;
-
 constexpr static uint32_t WHITE = 0xFFFFFFFF;
+
+static constexpr int THREADS_COUNT = 12;
+static ThreadPool thread_pool{THREADS_COUNT};
 
 struct Point {
     double x{0.0}, y{0.0}, z{0.0}, w{1.0};
@@ -23,9 +25,12 @@ struct Point {
     Point operator+(const Point& other) const;
     Point operator-(const Point& other) const;
     Point operator*(double scalar) const;
-
+    
     Point& normalize();
 };
+
+Point operator*(const TransformMatrix& matrix, const Point& point);
+
 
 class Bitmap {
 public:
@@ -34,12 +39,10 @@ public:
     const uint8_t* data() const;
     void clear();
     void draw_faces(const std::span<Point>& points, 
-                    const std::span<Face>& faces, int threads_count);
+                    const std::span<Face>& faces);
 
 private:
-    static constexpr int THREADS_COUNT = 1;
 
-    ThreadPool m_thread_pool;
     std::vector<uint32_t> m_data; 
     int m_width;
     int m_height;

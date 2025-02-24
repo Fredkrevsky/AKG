@@ -18,8 +18,13 @@ public:
     void rotate(double angle_x, double angle_y);
     void scale(bool is_getting_closer);
 
-    std::vector<Point> get_vertices(const std::vector<Point>& vertices);
+    std::vector<Point> transform_vertices(const std::vector<Point>& vertices);
     TransformMatrix get_transform_matrix();
+
+    Point get_eye() const;
+    Point get_target() const;
+    Point get_up() const;
+    double get_scale() const;
 
 private:
     constexpr static double rotation_sensitivity{0.5};
@@ -29,7 +34,7 @@ private:
     constexpr static double height{900.0};
     constexpr static double fov = 2.0 * PI / 3.0;
 
-    Point eye{0, 0, 10, 1};
+    Point eye{0, 0, -10, 1};
     Point target{0, 0, 0, 1};
     Point up{0, 1, 0, 0};
 

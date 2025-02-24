@@ -6,14 +6,10 @@ public:
     FPSCounter() noexcept = default;
     ~FPSCounter() noexcept = default;
 
-    [[nodiscard]] bool initialize();
     void update();
-    void draw(sf::RenderWindow& window) const;
+    double get_fps() const;
 
 private:
-    constexpr static auto font_name = "arial.ttf";
-
-    sf::Font font;
-    sf::Text fpsText;
-    sf::Clock clock;
+    double m_fps;
+    sf::Clock m_clock;
 };

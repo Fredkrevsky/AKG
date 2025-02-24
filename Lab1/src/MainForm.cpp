@@ -7,7 +7,6 @@
 using namespace std::string_literals;
 
 constexpr auto FILE_NAME = "models/logan.obj";
-constexpr static int THREADS_COUNT = 12;
 constexpr static double t = (1.0 + std::sqrt(5.0)) / 2.0;
 
 static std::vector<Point> default_vertices = {      
@@ -24,16 +23,21 @@ static std::vector<Face> default_faces = {
 };
 
 MainForm::MainForm() noexcept
-    : m_window(sf::VideoMode(width, height), "Lab №1") 
+    : m_window(sf::VideoMode(width, height), "Lab №1")
     , m_bitmap(width, height)
+    , m_camera(std::make_shared<Camera>())
+    , m_counter(std::make_shared<FPSCounter>())
+    , m_logger(std::make_shared<Logger>())
 { 
     m_vertices = default_vertices;
     m_faces = default_faces;
     m_window.setMouseCursorVisible(false);
+    m_logger->set_camera(m_camera);
+    m_logger->set_fps_counter(m_counter);
 }
 
 void MainForm::run_main_loop() {
-    if (!m_counter.initialize()){
+    if (!m_logger->initialize()){
         return;
     }
 
@@ -55,7 +59,7 @@ void MainForm::run_main_loop() {
             else if (event.type == sf::Event::MouseWheelScrolled) {
                 if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
                     bool is_getting_closer = event.mouseWheelScroll.delta > 0;
-                    m_camera.scale(is_getting_closer);
+                    m_camera->scale(is_getting_closer);
                 }
             }
         }
@@ -63,15 +67,17 @@ void MainForm::run_main_loop() {
         handle_mouse_rotation();
         handle_keyboard_movement();
 
-        auto vertices = m_camera.get_vertices(m_vertices);
-        m_bitmap.draw_faces(vertices, m_faces, THREADS_COUNT);
+        auto vertices = m_camera->transform_vertices(m_vertices);
+        m_bitmap.draw_faces(vertices, m_faces);
         texture.update(m_bitmap.data());
 
         m_window.clear();
         m_window.draw(sprite);
-        m_counter.draw(m_window);
+        m_logger->draw(m_window);
         m_window.display();
-        m_counter.update();
+        
+        m_counter->update();
+        m_logger->update();
     }
 }
 
@@ -84,7 +90,7 @@ void MainForm::handle_mouse_rotation() {
     if (deltaX != 0 || deltaY != 0) {
         double angle_x = deltaX * sensitivity;
         double angle_y = deltaY * sensitivity;
-        m_camera.rotate(angle_x, angle_y);
+        m_camera->rotate(angle_x, angle_y);
 
         sf::Mouse::setPosition(center, m_window);
     }
@@ -92,16 +98,16 @@ void MainForm::handle_mouse_rotation() {
 
 void MainForm::handle_keyboard_movement() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        m_camera.move(MoveDirection::FORWARD);
+        m_camera->move(MoveDirection::FORWARD);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        m_camera.move(MoveDirection::BACK);
+        m_camera->move(MoveDirection::BACK);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        m_camera.move(MoveDirection::LEFT);
+        m_camera->move(MoveDirection::LEFT);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        m_camera.move(MoveDirection::RIGHT);
+        m_camera->move(MoveDirection::RIGHT);
     }
 }
 
