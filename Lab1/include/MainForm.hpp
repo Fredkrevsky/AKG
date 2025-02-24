@@ -20,7 +20,7 @@ private:
     void handle_keyboard_movement();
     
 private:
-    constexpr static double sensitivity{0.01};
+    constexpr static double sensitivity{0.1};
     constexpr static double keyboard_sensitivity{0.1};
     constexpr static int width{1600};
     constexpr static int height{900};

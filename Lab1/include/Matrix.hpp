@@ -34,12 +34,14 @@ Point operator*(const TransformMatrix& matrix, const Point& point);
 
 class Bitmap {
 public:
-    Bitmap(int width, int height);
+    Bitmap(int width, int height) noexcept;
     
     const uint8_t* data() const;
     void clear();
     void draw_faces(const std::span<Point>& points, 
-                    const std::span<Face>& faces);
+                    const std::span<Face>& faces,
+                    const Point& eye,
+                    const Point& forward);
 
 private:
 

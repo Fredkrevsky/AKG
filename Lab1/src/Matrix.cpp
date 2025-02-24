@@ -7,10 +7,11 @@
 #include <thread>
 #include <chrono>
 #include <future>
+#include <iostream>
 
 using namespace std::chrono_literals;
 
-Bitmap::Bitmap(int width, int height) 
+Bitmap::Bitmap(int width, int height) noexcept 
     : m_data(width * height, 0)
     , m_width(width)
     , m_height(height)
@@ -24,50 +25,49 @@ const uint8_t* Bitmap::data() const {
     return reinterpret_cast<const uint8_t*>(m_data.data());
 }
 
-void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& faces) {
-    
+void Bitmap::draw_faces(const std::span<Point>& points, 
+                        const std::span<Face>& faces,
+                        const Point& eye,
+                        const Point& forward) 
+{
     auto draw_line = [&](std::vector<uint32_t>& data, int x1, int y1, int x2, int y2) {
-    
         int dx = abs(x2 - x1);
         int dy = abs(y2 - y1);
         int sx = (x1 < x2) ? 1 : -1;
         int sy = (y1 < y2) ? 1 : -1;
         int err = dx - dy;
-    
-    
+        
         while (true) {
-            if (x1 >= 0 && x1 < m_width && y1 >= 0 && y1 < m_height){
+            if (x1 >= 0 && x1 < m_width && y1 >= 0 && y1 < m_height) {
                 int index = y1 * m_width + x1;
                 data[index] = WHITE;
             }
-            else{
-                break;
-            }
-    
+            else break;
+
             if (x1 == x2 && y1 == y2) break;
-    
             int e2 = 2 * err;
             if (e2 > -dy) { err -= dy; x1 += sx; }
             if (e2 < dx) { err += dx; y1 += sy; }
         }
     };
     
-    auto draw_face = [&](std::vector<uint32_t>& data, const Face& face) {
-        const size_t face_size = face.size();
-    
-        for (size_t i = 0; i < face_size; ++i) {
-            const auto& point1 = points[face[i]];
-            const auto& point2 = points[face[(i + 1) % face_size]];
-    
-            auto [x1, y1, z1, w1] = point1;
-            auto [x2, y2, z2, w2] = point2;
-            draw_line(data, x1, y1, x2, y2);
-        }
-    };
-    
     auto draw_partial = [&](auto it_begin, auto it_end){
         std::ranges::for_each(it_begin, it_end, [&](const Face& face){
-            draw_face(m_data, face);
+            const size_t face_size = face.size();
+
+            for (size_t i = 0; i < face_size; ++i) {
+                const auto& point1 = points[face[i]];
+                const auto& point2 = points[face[(i + 1) % face_size]];
+
+                if (point1.z > 0 && point2.z > 0){
+                    int screenX1 = static_cast<int>(point1.x);
+                    int screenY1 = static_cast<int>(point1.y);
+                    int screenX2 = static_cast<int>(point2.x);
+                    int screenY2 = static_cast<int>(point2.y);
+    
+                    draw_line(m_data, screenX1, screenY1, screenX2, screenY2);
+                }
+            }
         });
     };
 
@@ -77,9 +77,8 @@ void Bitmap::draw_faces(const std::span<Point>& points, const std::span<Face>& f
 
     const int size = faces.size();
     int count_per_thread = size / THREADS_COUNT;
-
     
-    for (int i = 0; i < THREADS_COUNT; ++i){
+    for (int i = 0; i < THREADS_COUNT; ++i) {
         int current_size = (i < THREADS_COUNT - 1)
         ?   count_per_thread
         :   size - (THREADS_COUNT - 1) * count_per_thread;

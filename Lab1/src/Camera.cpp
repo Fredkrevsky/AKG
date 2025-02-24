@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include <iostream>
 
 void Camera::move(MoveDirection direction) {
     Point forward = (target - eye).normalize();
@@ -29,42 +30,51 @@ void Camera::move(MoveDirection direction) {
 }
 
 void Camera::rotate(double deltaX, double deltaY) {
-    constexpr double max_pitch = 89.0;
 
-    Point forward = (target - eye).normalize();
-    Point right = up.cross(forward).normalize();
+    constexpr auto radians = [](double angle) {
+        return PI * angle / 180.0;
+    };
 
-    TransformMatrix rotationY = createRotationY(deltaX * rotation_sensitivity);
-    forward = forward * rotationY;
+    constexpr double max_pitch = radians(89.0);
+    constexpr static Point world_up{0.0, 1.0, 0.0, 0.0};
 
-    double pitch = std::asin(forward.y) * (180.0 / M_PI);
-    double newPitch = pitch + deltaY * rotation_sensitivity;
+    static double yaw = radians(90.0);
+    static double pitch = 0.0;
 
-    if (newPitch > max_pitch) newPitch = max_pitch;
-    if (newPitch < -max_pitch) newPitch = -max_pitch;
+    yaw -= deltaX * rotation_sensitivity;
+    pitch += deltaY * rotation_sensitivity;
 
-    forward.y = std::sin(newPitch * (M_PI / 180.0));
-    forward = forward.normalize();
+    yaw = normalize_angle(yaw);
+    pitch = std::clamp(pitch, -max_pitch, max_pitch);
 
+    Point forward {
+        std::cos(yaw) * std::cos(pitch),
+        std::sin(pitch),
+        std::sin(yaw) * std::cos(pitch),
+        1.0
+    };
+    
+    forward.normalize();
+
+    Point right = world_up.cross(forward).normalize();
+    up = forward.cross(right).normalize();
     target = eye + forward;
 }
 
-
 void Camera::scale(bool is_getting_closer) {
-    if (is_getting_closer){
-        scale_factor *= scale_sensitivity;
-    }
-    else {
-        scale_factor /= scale_sensitivity;
-    }
+    double new_scale_factor = is_getting_closer 
+        ? scale_factor * scale_sensitivity
+        : scale_factor / scale_sensitivity;
+
+    scale_factor = std::clamp(
+        new_scale_factor,
+        MIN_SCALE_FACTOR,
+        MAX_SCALE_FACTOR
+    );
 }
 
 TransformMatrix Camera::get_transform_matrix()
 {
-    constexpr double znear = 0.01; 
-    constexpr double zfar = 100.0; 
-    constexpr double aspect = width / height; 
-
     Point ZAxis = (eye - target).normalize();
     Point XAxis = up.cross(ZAxis).normalize();
     Point YAxis = ZAxis.cross(XAxis).normalize();

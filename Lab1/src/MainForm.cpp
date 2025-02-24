@@ -68,7 +68,12 @@ void MainForm::run_main_loop() {
         handle_keyboard_movement();
 
         auto vertices = m_camera->transform_vertices(m_vertices);
-        m_bitmap.draw_faces(vertices, m_faces);
+        
+        auto eye = m_camera->get_eye();
+        auto target = m_camera->get_target();
+        auto forward = eye - target;
+
+        m_bitmap.draw_faces(vertices, m_faces, eye, forward);
         texture.update(m_bitmap.data());
 
         m_window.clear();
