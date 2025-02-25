@@ -83,12 +83,12 @@ void MainForm::draw() {
 void MainForm::handle_mouse_rotation() {
     sf::Vector2i mouse_position = sf::Mouse::getPosition(m_window);
 
-    int deltaX = center.x - mouse_position.x;
-    int deltaY = center.y - mouse_position.y;
+    int delta_x = center.x - mouse_position.x;
+    int delta_y = center.y - mouse_position.y;
 
-    if (deltaX != 0 || deltaY != 0) {
-        double angle_x = deltaX * sensitivity;
-        double angle_y = deltaY * sensitivity;
+    if (delta_x != 0 || delta_y != 0) {
+        double angle_x = delta_x * sensitivity;
+        double angle_y = delta_y * sensitivity;
         m_camera->rotate(angle_x, angle_y);
 
         sf::Mouse::setPosition(center, m_window);

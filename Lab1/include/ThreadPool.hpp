@@ -8,12 +8,11 @@
 #include <algorithm>
 #include <condition_variable>
 #include <any>
+#include <optional>
 
+using task_t = std::packaged_task<std::any()>;
 
 class ThreadPool {
-public:
-    using task_t = std::packaged_task<std::any()>;
-
 public:
     explicit ThreadPool(int threads_count) noexcept;
     ~ThreadPool();
@@ -25,11 +24,10 @@ public:
 
 private:
     void worker_thread();
-    bool get_task(task_t& task);
+    std::optional<task_t> get_task();
 
     std::queue<task_t> m_tasks;
     std::vector<std::thread> m_threads;
-    int m_threads_count;
 
     std::mutex m_mtx;
     std::condition_variable m_cv;

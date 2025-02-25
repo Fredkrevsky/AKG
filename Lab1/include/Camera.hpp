@@ -12,7 +12,6 @@ enum class MoveDirection {
 class Camera final {
 public:
     Camera() noexcept = default;
-    ~Camera() noexcept = default;
     
     void move(MoveDirection direction);
     void rotate(double angle_x, double angle_y);

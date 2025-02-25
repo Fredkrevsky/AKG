@@ -32,7 +32,7 @@ void Camera::move(MoveDirection direction) {
     }
 }
 
-void Camera::rotate(double deltaX, double deltaY) {
+void Camera::rotate(double delta_x, double delta_y) {
 
     constexpr auto radians = [](double angle) {
         return PI * angle / 180.0;
@@ -44,8 +44,8 @@ void Camera::rotate(double deltaX, double deltaY) {
     static double yaw = radians(90.0);
     static double pitch = 0.0;
 
-    yaw -= deltaX * rotation_sensitivity;
-    pitch += deltaY * rotation_sensitivity;
+    yaw -= delta_x * rotation_sensitivity;
+    pitch += delta_y * rotation_sensitivity;
 
     yaw = normalize_angle(yaw);
     pitch = std::clamp(pitch, -max_pitch, max_pitch);
@@ -88,15 +88,15 @@ TransformMatrix Camera::get_transform_matrix() const {
         {0, 0, 0, 1}
     }};
 
-    double f = 1.0 / std::tan(fov * 0.5);
-    TransformMatrix projection_matrix = {{
+    constexpr double f = 1.0 / std::tan(fov * 0.5);
+    constexpr TransformMatrix projection_matrix = {{
         {f / aspect, 0,  0,  0},
         {0, f,  0,  0},
         {0, 0, (zfar + znear) / (znear - zfar), 2 * zfar * znear / (znear - zfar)},
         {0, 0, -1,  0}
     }};
 
-    TransformMatrix viewport_matrix = {{
+    constexpr TransformMatrix viewport_matrix = {{
         {width / 2, 0, 0, width / 2},
         {0, -height / 2, 0, height / 2},
         {0, 0, 1, 0},

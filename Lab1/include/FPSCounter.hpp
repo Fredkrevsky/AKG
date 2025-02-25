@@ -4,7 +4,6 @@
 class FPSCounter final {    
 public:
     FPSCounter() noexcept = default;
-    ~FPSCounter() noexcept = default;
 
     void update();
     double get_fps() const;

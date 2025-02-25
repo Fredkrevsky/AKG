@@ -2,12 +2,11 @@
 #include <algorithm>
 
 ThreadPool::ThreadPool(int threads_count) noexcept 
-    : m_threads_count(threads_count)
-    , m_end(false) 
+    : m_end(false) 
 {
-    m_threads.reserve(m_threads_count);
+    m_threads.reserve(threads_count);
 
-    for (int i = 0; i < m_threads_count; ++i) {
+    for (int i = 0; i < threads_count; ++i) {
         m_threads.emplace_back([this] { this->worker_thread(); });
     }
 }
@@ -21,25 +20,22 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::stop() {
-    {
-        std::lock_guard<std::mutex> lock(m_mtx);
-        m_end = true;
-    }
+    m_end = true;
     m_cv.notify_all();
 }
 
 void ThreadPool::worker_thread() {
-    task_t task;
-
     while (true) {
-        if (!get_task(task)) {
+        auto task_optional = get_task();
+        if (!task_optional.has_value()){
             break;
         }
+        auto task = std::move(task_optional.value());
         task();
     }
 }
 
-bool ThreadPool::get_task(task_t& task) {
+std::optional<task_t> ThreadPool::get_task() {
     std::unique_lock<std::mutex> lock(m_mtx);
 
     m_cv.wait(lock, [this]() {
@@ -47,11 +43,11 @@ bool ThreadPool::get_task(task_t& task) {
     });
 
     if (m_end && m_tasks.empty()) {
-        return false;
+        return {};
     }
 
-    task = std::move(m_tasks.front());
+    auto task = std::move(m_tasks.front());
     m_tasks.pop();
 
-    return true;
+    return std::optional<task_t>{std::move(task)};
 }
