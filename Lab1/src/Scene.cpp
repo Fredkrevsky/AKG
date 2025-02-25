@@ -2,7 +2,7 @@
 
 using namespace std::string_literals;
 
-void Scene::initialize() {
+bool Scene::initialize() {
     std::unique_ptr<Parser> parser{nullptr};
     std::string file_path{MODEL_FILE_PATH};
 
@@ -21,6 +21,7 @@ void Scene::initialize() {
     }
     else {
         parser.reset(nullptr);
+        return false;
     }
 
     if (parser) {
@@ -28,6 +29,8 @@ void Scene::initialize() {
         m_model.set_vertices(parser->get_vertices());
         m_model.set_faces(parser->get_faces());
     }
+
+    return true;
 }
 
 void Scene::rotate_model(const Point &rotate_vector) {
@@ -35,7 +38,7 @@ void Scene::rotate_model(const Point &rotate_vector) {
 }
 
 void Scene::move_model(const Point &move_vector) {
-    m_model_position = m_model_position + move_vector;
+    m_model_position += move_vector;
 }
 
 Vertices Scene::get_vertices() const
@@ -44,13 +47,12 @@ Vertices Scene::get_vertices() const
     auto move_matrix = create_move_matrix(m_model_position);
 
     std::ranges::for_each(vertices, [&](auto& vertex){
-        vertex = vertex * move_matrix;
+        vertex *= move_matrix;
     });
     return vertices;
 }
 
 Faces Scene::get_faces() const
 {
-    auto faces = m_model.get_faces();
-    return faces;
+    return m_model.get_faces();
 }

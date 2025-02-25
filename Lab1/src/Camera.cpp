@@ -3,28 +3,31 @@
 
 void Camera::move(MoveDirection direction) {
     Point forward = (target - eye).normalize();
-    Point right = up.cross(forward).normalize();
+    Point left = up.cross(forward).normalize();
     
+    Point forward_move_vector = forward * camera_speed;
+    Point left_move_vector = left * camera_speed;
+
     switch (direction)
     {
         case MoveDirection::FORWARD:
-            eye = eye + forward * camera_speed;
-            target = target + forward * camera_speed;
+            eye += forward_move_vector;
+            target += forward_move_vector;
             break;
 
         case MoveDirection::BACK:
-            eye = eye - forward * camera_speed;
-            target = target - forward * camera_speed;
+            eye -= forward_move_vector;
+            target -= forward_move_vector;
             break;
 
-        case MoveDirection::LEFT:
-            eye = eye + right * camera_speed;
-            target = target + right * camera_speed;
+        case MoveDirection::LEFT:      
+            eye += left_move_vector;
+            target += left_move_vector;
             break;
 
-        case MoveDirection::RIGHT:
-            eye = eye - right * camera_speed;
-            target = target - right * camera_speed;
+        case MoveDirection::RIGHT:  
+            eye -= left_move_vector;
+            target -= left_move_vector;
             break;
     }
 }
@@ -73,8 +76,7 @@ void Camera::scale(bool is_getting_closer) {
     );
 }
 
-TransformMatrix Camera::get_transform_matrix()
-{
+TransformMatrix Camera::get_transform_matrix() const {
     Point ZAxis = (eye - target).normalize();
     Point XAxis = up.cross(ZAxis).normalize();
     Point YAxis = ZAxis.cross(XAxis).normalize();
@@ -125,21 +127,4 @@ Point Camera::get_up() const {
 
 double Camera::get_scale() const {
     return scale_factor;
-}
-
-std::vector<Point> Camera::transform_vertices(const std::vector<Point>& vertices) {
-    std::vector<Point> transformed_vertices;
-
-    TransformMatrix transform_matrix = get_transform_matrix();
-
-    std::ranges::transform(vertices, std::back_inserter(transformed_vertices), 
-        [&](const Point& vertex)
-    {
-        auto transformed_vertex = vertex * transform_matrix;
-        double w = transformed_vertex.w;
-        transformed_vertex = transformed_vertex * (1 / w);
-        return transformed_vertex;
-    });
-
-    return transformed_vertices;
 }

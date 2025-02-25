@@ -4,19 +4,18 @@ void Model::rotate(const Point &rotate_vector) {
     TransformMatrix rotation_matrix = create_rotation_matrix(rotate_vector);
 
     std::ranges::for_each(m_vertices, [&](auto& vertex){
-        vertex = vertex * rotation_matrix;
+        vertex *= rotation_matrix;
     });
 }
 
 void Model::move(const Point &move_vector) {
     TransformMatrix move_matrix = create_move_matrix(move_vector);
     std::ranges::for_each(m_vertices, [&](auto& vertex){
-        vertex = vertex * move_matrix;
+        vertex *= move_matrix;
     });
 }
 
-void Model::set_vertices(Vertices &&vertices)
-{
+void Model::set_vertices(Vertices &&vertices) {
     m_vertices = vertices;
 }
 

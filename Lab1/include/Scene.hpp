@@ -6,7 +6,7 @@ class Scene final {
 public:
     Scene() noexcept = default;
 
-    void initialize();
+    [[nodiscard]] bool initialize();
     void rotate_model(const Point& rotate_vector);
     void move_model(const Point& move_vector);
 

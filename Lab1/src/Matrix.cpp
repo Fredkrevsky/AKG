@@ -57,7 +57,7 @@ void Bitmap::draw_faces(const Vertices& points,
                 const auto& point1 = points[face[i]];
                 const auto& point2 = points[face[(i + 1) % face_size]];
 
-                if (point1.z > 0 && point2.z > 0){
+                if (point1.w >= 0.9999 && point2.w >= 0.9999){
                     int x1 = static_cast<int>(point1.x);
                     int y1 = static_cast<int>(point1.y);
                     int x2 = static_cast<int>(point2.x);
@@ -128,6 +128,44 @@ Point Point::operator*(double scalar) const {
     return {x * scalar, y * scalar, z * scalar, w * scalar};
 }
 
+Point& Point::operator+=(const Point& other) {
+    x += other.x;
+    y += other.y;
+    z += other.z;
+    w += other.w;
+    return *this;
+}
+
+Point &Point::operator-=(const Point &other) {
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
+    w -= other.w;
+    return *this;
+}
+
+Point& Point::operator*=(double scalar) {
+    x *= scalar;
+    y *= scalar;
+    z *= scalar;
+    w *= scalar;
+    return *this;
+}
+
+Point& Point::operator*=(const TransformMatrix& matrix) {
+    double new_x = matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z + matrix[0][3] * w;
+    double new_y = matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z + matrix[1][3] * w;
+    double new_z = matrix[2][0] * x + matrix[2][1] * y + matrix[2][2] * z + matrix[2][3] * w;
+    double new_w = matrix[3][0] * x + matrix[3][1] * y + matrix[3][2] * z + matrix[3][3] * w;
+
+    x = new_x;
+    y = new_y;
+    z = new_z;
+    w = new_w;
+
+    return *this;
+}
+
 Point& Point::normalize() {
     double length = std::sqrt(x * x + y * y + z * z);
     if (length > 1e-6) { 
@@ -160,14 +198,6 @@ TransformMatrix operator*(const TransformMatrix& a, const TransformMatrix& b) {
             }
         }
     }
-    return result;
-}
-
-Vertices mult(const TransformMatrix& matrix, const Vertices& points) {
-    Vertices result{};
-    std::ranges::transform(points, std::back_inserter(result), [&](const Point& point){
-        return matrix * point;
-    });
     return result;
 }
 

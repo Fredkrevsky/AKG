@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Camera.hpp"
-#include "Matrix.hpp"
 #include "FPSCounter.hpp"
 #include "Logger.hpp"
 #include "Scene.hpp"
@@ -29,10 +28,10 @@ private:
     sf::Texture m_texture;
     Bitmap m_bitmap;
     Scene m_scene;
+    Logger m_logger;
     
     std::shared_ptr<FPSCounter> m_counter;
     std::shared_ptr<Camera> m_camera;
-    std::shared_ptr<Logger> m_logger;
 
     sf::Vector2i mouse_press_position{};
     sf::Vector2i center{width / 2, height / 2};
