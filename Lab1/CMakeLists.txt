@@ -21,6 +21,8 @@ add_executable(
     src/ThreadPool.cpp
     src/Camera.cpp
     src/Logger.cpp
+    src/Model.cpp
+    src/Scene.cpp
 )
 
 target_include_directories(

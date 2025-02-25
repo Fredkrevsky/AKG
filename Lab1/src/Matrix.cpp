@@ -25,12 +25,10 @@ const uint8_t* Bitmap::data() const {
     return reinterpret_cast<const uint8_t*>(m_data.data());
 }
 
-void Bitmap::draw_faces(const std::span<Point>& points, 
-                        const std::span<Face>& faces,
-                        const Point& eye,
-                        const Point& forward) 
+void Bitmap::draw_faces(const Vertices& points, 
+                        const Faces& faces) 
 {
-    auto draw_line = [&](std::vector<uint32_t>& data, int x1, int y1, int x2, int y2) {
+    auto draw_line = [this](std::vector<uint32_t>& data, int x1, int y1, int x2, int y2) {
         int dx = abs(x2 - x1);
         int dy = abs(y2 - y1);
         int sx = (x1 < x2) ? 1 : -1;
@@ -60,12 +58,12 @@ void Bitmap::draw_faces(const std::span<Point>& points,
                 const auto& point2 = points[face[(i + 1) % face_size]];
 
                 if (point1.z > 0 && point2.z > 0){
-                    int screenX1 = static_cast<int>(point1.x);
-                    int screenY1 = static_cast<int>(point1.y);
-                    int screenX2 = static_cast<int>(point2.x);
-                    int screenY2 = static_cast<int>(point2.y);
+                    int x1 = static_cast<int>(point1.x);
+                    int y1 = static_cast<int>(point1.y);
+                    int x2 = static_cast<int>(point2.x);
+                    int y2 = static_cast<int>(point2.y);
     
-                    draw_line(m_data, screenX1, screenY1, screenX2, screenY2);
+                    draw_line(m_data, x1, y1, x2, y2);
                 }
             }
         });
@@ -165,16 +163,15 @@ TransformMatrix operator*(const TransformMatrix& a, const TransformMatrix& b) {
     return result;
 }
 
-std::vector<Point> mult(const TransformMatrix& matrix, const std::vector<Point>& points) {
-    std::vector<Point> result{};
+Vertices mult(const TransformMatrix& matrix, const Vertices& points) {
+    Vertices result{};
     std::ranges::transform(points, std::back_inserter(result), [&](const Point& point){
         return matrix * point;
     });
     return result;
 }
 
-
-TransformMatrix createRotationX(double angle) {
+TransformMatrix create_rotation_matrix_x(double angle) {
     double c = std::cos(angle);
     double s = std::sin(angle);
     return {{
@@ -185,7 +182,7 @@ TransformMatrix createRotationX(double angle) {
     }};
 }
 
-TransformMatrix createRotationY(double angle) {
+TransformMatrix create_rotation_matrix_y(double angle) {
     double c = std::cos(angle);
     double s = std::sin(angle);
     return {{
@@ -196,7 +193,48 @@ TransformMatrix createRotationY(double angle) {
     }};
 }
 
-TransformMatrix createScale(double scalar){
+TransformMatrix create_rotation_matrix_z(double angle) {
+    double c = std::cos(angle);
+    double s = std::sin(angle);
+    return {{
+        {c, -s, 0, 0},
+        {s, c, 0, 0},
+        {0, 0, 1, 0},
+        {0, 0, 0, 1}
+    }};
+}
+
+TransformMatrix create_rotation_matrix(const Point& angles) {
+    TransformMatrix result = {{
+        {1, 0, 0, 0}, 
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {0, 0, 0, 1}
+    }};
+
+    if (angles.x != 0) {
+        result = result * create_rotation_matrix_x(angles.x);
+    }
+    if (angles.y != 0) {
+        result = result * create_rotation_matrix_y(angles.y);
+    }
+    if (angles.z != 0) {
+        result = result * create_rotation_matrix_z(angles.z);
+    }
+
+    return result;
+}
+
+TransformMatrix create_move_matrix(const Point& translation) {
+    return {{
+        {1, 0, 0, translation.x},
+        {0, 1, 0, translation.y},
+        {0, 0, 1, translation.z},
+        {0, 0, 0, 1}
+    }};
+}
+
+TransformMatrix create_scale_matrix(double scalar){
     return {{
         {scalar, 0, 0, 0},
         {0, scalar, 0, 0},

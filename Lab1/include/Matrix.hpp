@@ -8,6 +8,7 @@
 
 using TransformMatrix = std::array<std::array<double, 4>, 4>;
 using Face = std::vector<int>;
+using Faces = std::vector<Face>;
 
 constexpr double PI = 3.141592653589793;
 constexpr double TWO_PI = 2.0 * PI;
@@ -17,8 +18,9 @@ static constexpr int THREADS_COUNT = 12;
 static ThreadPool thread_pool{THREADS_COUNT};
 
 struct Point {
+    
     double x{0.0}, y{0.0}, z{0.0}, w{1.0};
-
+    
     double dot(const Point& other) const;
     Point cross(const Point& other) const;
     Point operator*(const TransformMatrix& matrix) const;
@@ -31,6 +33,7 @@ struct Point {
 
 Point operator*(const TransformMatrix& matrix, const Point& point);
 
+using Vertices = std::vector<Point>;
 
 class Bitmap {
 public:
@@ -38,10 +41,8 @@ public:
     
     const uint8_t* data() const;
     void clear();
-    void draw_faces(const std::span<Point>& points, 
-                    const std::span<Face>& faces,
-                    const Point& eye,
-                    const Point& forward);
+    void draw_faces(const Vertices& points, 
+                    const Faces& faces);
 
 private:
 
@@ -51,10 +52,10 @@ private:
 };
 
 TransformMatrix operator*(const TransformMatrix& a, const TransformMatrix& b);
-std::vector<Point> mult(const TransformMatrix& matrix, const std::vector<Point>& points);
+Vertices mult(const TransformMatrix& matrix, const Vertices& points);
 
-TransformMatrix createRotationX(double angle);
-TransformMatrix createRotationY(double angle);
-TransformMatrix createScale(double scalar);
+TransformMatrix create_rotation_matrix(const Point& rotate_vector);
+TransformMatrix create_move_matrix(const Point& move_vector);
+TransformMatrix create_scale_matrix(double scalar);
 
 double normalize_angle(double angle);

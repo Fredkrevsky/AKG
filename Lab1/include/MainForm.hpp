@@ -2,9 +2,9 @@
 #include <SFML/Graphics.hpp>
 #include "Camera.hpp"
 #include "Matrix.hpp"
-#include "Parser.hpp"
 #include "FPSCounter.hpp"
 #include "Logger.hpp"
+#include "Scene.hpp"
 
 class MainForm final {
 public:
@@ -15,9 +15,9 @@ public:
     
 private:
     void on_key_press(sf::Keyboard::Key code);
-    void load_from_file();
     void handle_mouse_rotation();
     void handle_keyboard_movement();
+    void draw();
     
 private:
     constexpr static double sensitivity{0.1};
@@ -26,9 +26,9 @@ private:
     constexpr static int height{900};
 
     sf::RenderWindow m_window;
-    Vertices m_vertices;
-    Faces m_faces;
+    sf::Texture m_texture;
     Bitmap m_bitmap;
+    Scene m_scene;
     
     std::shared_ptr<FPSCounter> m_counter;
     std::shared_ptr<Camera> m_camera;

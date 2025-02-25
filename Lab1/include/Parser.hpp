@@ -1,9 +1,6 @@
 #pragma once
-#include <Matrix.hpp>
+#include "Matrix.hpp"
 #include <string>
-
-using Vertices = std::vector<Point>;
-using Faces = std::vector<Face>;
 
 
 class Parser {
