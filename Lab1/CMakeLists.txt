@@ -11,6 +11,8 @@ find_package(
     system
 )
 
+find_package(nlohmann_json REQUIRED)
+
 add_executable(
     ${PROJECT_NAME} 
     src/main.cpp
@@ -36,4 +38,5 @@ target_link_libraries(
     sfml-graphics 
     sfml-window 
     sfml-system
+    nlohmann_json::nlohmann_json
 )

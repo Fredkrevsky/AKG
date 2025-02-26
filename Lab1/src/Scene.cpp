@@ -22,7 +22,7 @@ bool Scene::initialize() {
         parser.reset(new ParserOBJ());
     }
     else if (file_format == ".gltf"){
-        parser.reset(nullptr);          //Insert gltf parser here
+        parser.reset(new ParserGLTF());
     }
     else {
         parser.reset(nullptr);

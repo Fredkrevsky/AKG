@@ -8,6 +8,7 @@ class ExampleRecipe(ConanFile):
 
     def requirements(self):
         self.requires("sfml/2.6.2")
+        self.requires("nlohmann_json/3.11.3")
 
     def layout(self):
         cmake_layout(self)

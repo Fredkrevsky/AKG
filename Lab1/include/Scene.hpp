@@ -14,7 +14,7 @@ public:
     Faces get_faces() const;
 
 private:
-    constexpr static auto MODEL_FILE_PATH = "models/logan.obj";
+    constexpr static auto MODEL_FILE_PATH = "models/ebr.gltf";
 
     Model m_model;
     Point m_model_position;

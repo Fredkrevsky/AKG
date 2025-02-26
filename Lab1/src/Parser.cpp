@@ -61,7 +61,7 @@ void ParserGLTF::parse_file(const std::string& file_path) {
             return;
         }
         std::vector<uint8_t> buffer_data((std::istreambuf_iterator<char>(bin_file)), std::istreambuf_iterator<char>());
-        buffers.emplace_back(std::move(buffer_data);
+        buffers.emplace_back(std::move(buffer_data));
     }
 
     for (const auto& accessor : gltf["accessors"]) {
