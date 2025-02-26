@@ -46,61 +46,75 @@ void ParserOBJ::parse_file(const std::string& file_path) {
 void ParserGLTF::parse_file(const std::string& file_path) {
     using json = nlohmann::json;
 
+    auto get_folder = [](const std::string& file_path) -> std::string {
+        auto slash_index = file_path.find_last_of('/');
+        if (slash_index == std::string::npos){
+            return "";
+        }
+        return file_path.substr(0, slash_index + 1);
+    };
+
     std::ifstream file(file_path);
     if (!file.is_open()) {
         return;
     }
-
+    
     json gltf;
     file >> gltf;
-
+    
+    std::string current_folder = get_folder(file_path);
     std::vector<std::vector<uint8_t>> buffers;
+
     for (const auto& buffer : gltf["buffers"]) {
-        std::ifstream bin_file(buffer["uri"], std::ios::binary);
+        std::string buffer_file_path = 
+            current_folder + std::string(buffer["uri"]);
+
+        std::ifstream bin_file(buffer_file_path, std::ios::binary);
         if (!bin_file.is_open()) {
             return;
         }
-        std::vector<uint8_t> buffer_data((std::istreambuf_iterator<char>(bin_file)), std::istreambuf_iterator<char>());
-        buffers.emplace_back(std::move(buffer_data));
+
+        buffers.emplace_back(std::vector<uint8_t>(
+            (std::istreambuf_iterator<char>(bin_file)), 
+            std::istreambuf_iterator<char>()
+        ));
     }
 
     for (const auto& accessor : gltf["accessors"]) {
-        if (accessor["type"] == "VEC3") {
-            int bufferViewIndex = accessor["bufferView"];
+        std::string accessor_type = accessor["type"];
+
+        if (accessor_type == "VEC3" || 
+            accessor_type == "SCALAR") 
+        {
+            const int bufferViewIndex = accessor["bufferView"];
             const auto& bufferView = gltf["bufferViews"][bufferViewIndex];
 
-            size_t byteOffset = bufferView.value("byteOffset", 0);
-            size_t count = accessor["count"];
-            size_t stride = bufferView.value("byteStride", sizeof(float) * 3);
+            const size_t byteOffset = bufferView.value("byteOffset", 0);
+            const size_t count = accessor["count"];
 
             const auto& buffer = buffers[bufferView["buffer"]];
-            const float* data = reinterpret_cast<const float*>(&buffer[byteOffset]);
 
-            for (size_t i = 0; i < count; ++i) {
-                Point vertex{ data[i * 3], data[i * 3 + 1], data[i * 3 + 2], 1 };
-                m_vertices.push_back(vertex);
+            if (accessor_type == "VEC3") {
+                const float* data = reinterpret_cast<const float*>(&buffer[byteOffset]);
+    
+                for (size_t index = 0; index < count * 3; index += 3) {
+                    m_vertices.emplace_back(Point{ 
+                        data[index], 
+                        data[index + 1], 
+                        data[index + 2], 
+                        1.0 
+                    });
+                }
             }
-        }
-    }
+            else {
+                const uint32_t* data = reinterpret_cast<const uint32_t*>(&buffer[byteOffset]);
 
-    for (const auto& accessor : gltf["accessors"]) {
-        if (accessor["type"] == "SCALAR") {
-            int bufferViewIndex = accessor["bufferView"];
-            const auto& bufferView = gltf["bufferViews"][bufferViewIndex];
-
-            size_t byteOffset = bufferView.value("byteOffset", 0);
-            size_t count = accessor["count"];
-            size_t componentSize = 2;
-
-            const auto& buffer = buffers[bufferView["buffer"]];
-            const uint16_t* data = reinterpret_cast<const uint16_t*>(&buffer[byteOffset]);
-
-            Face face;
-            for (size_t i = 0; i < count; ++i) {
-                face.push_back(static_cast<int>(data[i]));
-                if ((i + 1) % 3 == 0) {
-                    m_faces.push_back(face);
-                    face.clear();
+                for (size_t index = 0; index < count; index += 3) {
+                    m_faces.emplace_back(Face{
+                        static_cast<int>(data[index]),
+                        static_cast<int>(data[index + 1]),
+                        static_cast<int>(data[index + 2])
+                    });
                 }
             }
         }
