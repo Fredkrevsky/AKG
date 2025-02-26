@@ -1,4 +1,6 @@
 #include "Scene.hpp"
+#include <memory>
+#include <algorithm>
 
 using namespace std::string_literals;
 
@@ -18,6 +20,9 @@ bool Scene::initialize() {
 
     if (file_format == ".obj"){
         parser.reset(new ParserOBJ());
+    }
+    else if (file_format == ".gltf"){
+        parser.reset(nullptr);          //Insert gltf parser here
     }
     else {
         parser.reset(nullptr);
@@ -41,8 +46,7 @@ void Scene::move_model(const Point &move_vector) {
     m_model_position += move_vector;
 }
 
-Vertices Scene::get_vertices() const
-{
+Vertices Scene::get_vertices() const {
     auto vertices = m_model.get_vertices();
     auto move_matrix = create_move_matrix(m_model_position);
 
@@ -52,7 +56,6 @@ Vertices Scene::get_vertices() const
     return vertices;
 }
 
-Faces Scene::get_faces() const
-{
+Faces Scene::get_faces() const {
     return m_model.get_faces();
 }

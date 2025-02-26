@@ -1,5 +1,5 @@
 #include "Camera.hpp"
-#include <iostream>
+#include <algorithm>
 
 void Camera::move(MoveDirection direction) {
     Point forward = (target - eye).normalize();

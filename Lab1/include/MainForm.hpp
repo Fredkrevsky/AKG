@@ -4,11 +4,12 @@
 #include "FPSCounter.hpp"
 #include "Logger.hpp"
 #include "Scene.hpp"
+#include "Bitmap.hpp"
+
 
 class MainForm final {
 public:
     MainForm() noexcept;
-    ~MainForm() noexcept = default;
     
     void run_main_loop();
     

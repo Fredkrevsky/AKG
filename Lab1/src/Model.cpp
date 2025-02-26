@@ -1,4 +1,5 @@
 #include "Model.hpp"
+#include <algorithm>
 
 void Model::rotate(const Point &rotate_vector) {
     TransformMatrix rotation_matrix = create_rotation_matrix(rotate_vector);

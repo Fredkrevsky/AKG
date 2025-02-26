@@ -23,6 +23,7 @@ add_executable(
     src/Logger.cpp
     src/Model.cpp
     src/Scene.cpp
+    src/Bitmap.cpp
 )
 
 target_include_directories(
