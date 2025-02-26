@@ -25,3 +25,11 @@ public:
 
     virtual void parse_file(const std::string& file_path) override;
 };
+
+class ParserGLTF final : public Parser {
+public:
+    ParserGLTF() noexcept = default;
+    ~ParserGLTF() noexcept = default;
+
+    virtual void parse_file(const std::string& file_path) override;
+};
