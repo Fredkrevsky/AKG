@@ -3,6 +3,7 @@
 #include <sstream>
 #include <nlohmann/json.hpp>
 
+
 Vertices Parser::get_vertices() const {
     return m_vertices;
 }
@@ -59,7 +60,8 @@ void ParserGLTF::parse_file(const std::string& file_path) {
         if (!bin_file.is_open()) {
             return;
         }
-        buffers.emplace_back(std::istreambuf_iterator<char>(bin_file), {});
+        std::vector<uint8_t> buffer_data((std::istreambuf_iterator<char>(bin_file)), std::istreambuf_iterator<char>());
+        buffers.emplace_back(std::move(buffer_data);
     }
 
     for (const auto& accessor : gltf["accessors"]) {
