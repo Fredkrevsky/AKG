@@ -1,7 +1,7 @@
 #include "Bitmap.hpp"
 #include "ThreadPool.hpp"
 
-static constexpr int THREADS_COUNT = 6;
+static constexpr int THREADS_COUNT = 12;
 static ThreadPool thread_pool{THREADS_COUNT};
 
 Bitmap::Bitmap(int width, int height) noexcept 
@@ -50,7 +50,7 @@ void Bitmap::draw_faces(const Vertices& points,
                 const auto& point1 = points[face[i]];
                 const auto& point2 = points[face[(i + 1) % face_size]];
 
-                if (point1.w >= 0.9999 && point2.w >= 0.9999){
+                if (point1.w >= 0.999 && point2.w >= 0.999){
                     int x1 = static_cast<int>(point1.x);
                     int y1 = static_cast<int>(point1.y);
                     int x2 = static_cast<int>(point2.x);

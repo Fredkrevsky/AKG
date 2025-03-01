@@ -4,6 +4,17 @@
 #include <nlohmann/json.hpp>
 
 
+std::unique_ptr<Parser> Parser::create_parser(const std::string& format){
+    std::unique_ptr<Parser> parser{};
+    if (format == "obj"){
+        parser.reset(new ParserOBJ());
+    }
+    else if (format == "gltf"){
+        parser.reset(new ParserGLTF());
+    }
+    return parser;
+}
+
 Vertices Parser::get_vertices() const {
     return m_vertices;
 }

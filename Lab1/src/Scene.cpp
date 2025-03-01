@@ -5,7 +5,6 @@
 using namespace std::string_literals;
 
 bool Scene::initialize() {
-    std::unique_ptr<Parser> parser{nullptr};
     std::string file_path{MODEL_FILE_PATH};
 
     auto get_file_format = [](const std::string& file_path) -> std::string {
@@ -13,28 +12,18 @@ bool Scene::initialize() {
         if (dot_index == std::string::npos) {
             return ""s;
         }
-        return file_path.substr(dot_index);
+        return file_path.substr(dot_index + 1);
     };
 
     std::string file_format = get_file_format(file_path);
-
-    if (file_format == ".obj"){
-        parser.reset(new ParserOBJ());
-    }
-    else if (file_format == ".gltf"){
-        parser.reset(new ParserGLTF());
-    }
-    else {
-        parser.reset(nullptr);
+    
+    auto parser = Parser::create_parser(file_format);
+    if (!parser){
         return false;
     }
-
-    if (parser) {
-        parser->parse_file(file_path);
-        m_model.set_vertices(parser->get_vertices());
-        m_model.set_faces(parser->get_faces());
-    }
-
+    parser->parse_file(file_path);
+    m_model.set_vertices(parser->get_vertices());
+    m_model.set_faces(parser->get_faces());
     return true;
 }
 

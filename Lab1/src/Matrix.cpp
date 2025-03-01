@@ -111,7 +111,7 @@ TransformMatrix operator*(const TransformMatrix& a, const TransformMatrix& b) {
     return result;
 }
 
-TransformMatrix create_rotation_matrix_x(double angle) {
+static TransformMatrix create_rotation_matrix_x(double angle) {
     double c = std::cos(angle);
     double s = std::sin(angle);
     return {{
@@ -122,7 +122,7 @@ TransformMatrix create_rotation_matrix_x(double angle) {
     }};
 }
 
-TransformMatrix create_rotation_matrix_y(double angle) {
+static TransformMatrix create_rotation_matrix_y(double angle) {
     double c = std::cos(angle);
     double s = std::sin(angle);
     return {{
@@ -133,7 +133,7 @@ TransformMatrix create_rotation_matrix_y(double angle) {
     }};
 }
 
-TransformMatrix create_rotation_matrix_z(double angle) {
+static TransformMatrix create_rotation_matrix_z(double angle) {
     double c = std::cos(angle);
     double s = std::sin(angle);
     return {{

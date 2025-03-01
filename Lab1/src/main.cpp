@@ -1,4 +1,4 @@
-#include <MainForm.hpp>
+#include "MainForm.hpp"
 
 int main() {
     MainForm form;
