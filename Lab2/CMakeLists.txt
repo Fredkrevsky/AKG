@@ -20,7 +20,6 @@ add_executable(
     src/MainForm.cpp
     src/Parser.cpp
     src/FPSCounter.cpp
-    src/ThreadPool.cpp
     src/Camera.cpp
     src/Logger.cpp
     src/Model.cpp
