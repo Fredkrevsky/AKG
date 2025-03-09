@@ -33,7 +33,6 @@ void Camera::move(MoveDirection direction) {
 }
 
 void Camera::rotate(double delta_x, double delta_y) {
-
     constexpr auto radians = [](double angle) {
         return PI * angle / 180.0;
     };
@@ -41,22 +40,20 @@ void Camera::rotate(double delta_x, double delta_y) {
     constexpr double max_pitch = radians(89.0);
     constexpr static Point world_up{0.0, 1.0, 0.0, 0.0};
 
-    static double yaw = radians(90.0);
-    static double pitch = 0.0;
+    Point forward = (target - eye).normalize();
+    double yaw = std::atan2(forward.z, forward.x);
+    double pitch = std::asin(forward.y);
 
     yaw -= delta_x * rotation_sensitivity;
     pitch += delta_y * rotation_sensitivity;
-
-    yaw = normalize_angle(yaw);
     pitch = std::clamp(pitch, -max_pitch, max_pitch);
 
-    Point forward {
+    forward = {
         std::cos(yaw) * std::cos(pitch),
         std::sin(pitch),
         std::sin(yaw) * std::cos(pitch),
         1.0
     };
-    
     forward.normalize();
 
     Point right = world_up.cross(forward).normalize();

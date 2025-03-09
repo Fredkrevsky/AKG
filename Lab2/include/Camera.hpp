@@ -41,7 +41,7 @@ private:
     constexpr static double aspect = width / height; 
     
     Point eye{5.0, 5.0, 5.0, 1};
-    Point target{0, 0, 0, 1};
+    Point target{5.0, 5.0, 0, 1};
     Point up{0, 1, 0, 1};
 
     double scale_factor{1.0};
