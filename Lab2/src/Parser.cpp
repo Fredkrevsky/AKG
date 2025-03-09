@@ -4,6 +4,8 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 
+using namespace std::string_literals;
+
 std::unique_ptr<Parser> Parser::create_parser(const std::string& format){
     std::unique_ptr<Parser> parser{};
     if (format == "obj"){
@@ -21,6 +23,18 @@ Vertices Parser::get_vertices() const {
 
 Faces Parser::get_faces() const {
     return m_faces;
+}
+
+Normals Parser::get_normals() const {
+    return m_normals;
+}
+
+std::string Parser::get_format(const std::string& path) {
+    std::size_t dot_index = path.find_last_of(".");
+    if (dot_index == std::string::npos) {
+        return ""s;
+    }
+    return path.substr(dot_index + 1);
 }
 
 

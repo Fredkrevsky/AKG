@@ -6,16 +6,11 @@ class Model final {
 public:
     Model() noexcept = default;
 
-    void rotate(const Point& rotate_vector);
-    void move(const Point& move_vector);
-    
-    void set_data(Vertices&& vertices, Faces&& faces);
+    void set_data(Vertices&& vertices, Faces&& faces, Normals&& normals);
+
     Vertices get_vertices() const;
     Faces get_faces() const;
     Normals get_normals() const;
-
-private:
-    void calculate_normals();
 
 private:
     Vertices m_vertices;

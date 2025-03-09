@@ -4,9 +4,10 @@
 #include <cmath>
 #include <cstdint>
 #include <numbers>
+#include <span>
 
 using TransformMatrix = std::array<std::array<double, 4>, 4>;
-using Face = std::array<uint32_t, 4>;
+using Face = std::array<uint32_t, 3>;
 using Faces = std::vector<Face>;
 
 constexpr static double PI = std::numbers::pi_v<double>;
@@ -16,6 +17,7 @@ constexpr static uint32_t WHITE = 0xFFFFFFFF;
 
 struct Point {
     double x{0.0}, y{0.0}, z{0.0}, w{1.0};
+    uint8_t color{0xFF};
     
     double dot(const Point& other) const;
     Point cross(const Point& other) const;

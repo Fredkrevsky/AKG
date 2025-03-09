@@ -11,6 +11,10 @@ public:
                     const Faces& faces);
 
 private:
+    uint32_t get_triangle_color(uint16_t color1, uint16_t color2, uint16_t color3);
+    void draw_triangle(Point p1, Point p2, Point p3, uint32_t color);
+
+private:
     std::vector<uint32_t> m_data; 
     std::vector<double> m_z_buffer;
     int m_width;

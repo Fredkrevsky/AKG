@@ -17,6 +17,6 @@ private:
     constexpr static auto MODEL_FILE_PATH = "../models/logan.obj";
 
     Model m_model;
-    Point m_model_position;
+    Point m_model_position, m_model_rotation;
     Point m_sun{10.0, 10.0, 10.0};
 };

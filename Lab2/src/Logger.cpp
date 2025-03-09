@@ -6,7 +6,7 @@ bool Logger::initialize(){
         return false;
     }
     m_text.setFont(m_font);
-    m_text.setCharacterSize(20);
+    m_text.setCharacterSize(30);
     m_text.setFillColor(sf::Color::White);
     m_text.setPosition(10.f, 10.f);
     return true;
