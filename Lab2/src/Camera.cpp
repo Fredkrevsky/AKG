@@ -81,46 +81,40 @@ TransformMatrix Camera::get_view_matrix() const {
     Point XAxis = up.cross(ZAxis).normalize();
     Point YAxis = ZAxis.cross(XAxis).normalize();
 
-    TransformMatrix view_matrix = {{
+    return {{
         {XAxis.x, XAxis.y, XAxis.z, -XAxis.dot(eye)},
         {YAxis.x, YAxis.y, YAxis.z, -YAxis.dot(eye)},
         {ZAxis.x, ZAxis.y, ZAxis.z, -ZAxis.dot(eye)},
         {0, 0, 0, 1}
     }};
-
-    return view_matrix;
 }
 
 TransformMatrix Camera::get_projection_matrix() const {
     constexpr double f = 1.0 / std::tan(fov * 0.5);
-    constexpr TransformMatrix projection_matrix = {{
+    return {{
         {f / aspect, 0,  0,  0},
         {0, f,  0,  0},
         {0, 0, (zfar + znear) / (znear - zfar), 2 * zfar * znear / (znear - zfar)},
         {0, 0, -1,  0}
     }};
-
-    return projection_matrix;
 }
 
 TransformMatrix Camera::get_viewport_matrix() const {
-    constexpr TransformMatrix viewport_matrix = {{
+    return {{
         {width / 2, 0, 0, width / 2},
         {0, -height / 2, 0, height / 2},
         {0, 0, 1, 0},
         {0, 0, 0, 1}
     }};
-    return viewport_matrix;
 }
 
 TransformMatrix Camera::get_scale_matrix() const {
-    TransformMatrix scale_matrix = {{
+    return {{
         {scale_factor, 0, 0, 0},
         {0, scale_factor, 0, 0},
         {0, 0, scale_factor, 0},
         {0, 0, 0, 1}
     }}; 
-    return scale_matrix;
 }
 
 Point Camera::get_eye() const {

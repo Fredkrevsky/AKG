@@ -32,11 +32,3 @@ public:
 
     void parse_file(const std::string& file_path) override;
 };
-
-class ParserGLTF final : public Parser {
-public:
-    ParserGLTF() noexcept = default;
-    ~ParserGLTF() noexcept = default;
-
-    void parse_file(const std::string& file_path) override;
-};

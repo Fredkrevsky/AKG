@@ -18,7 +18,9 @@ bool Scene::initialize() {
     auto&& faces = parser->get_faces();
     auto&& vertices = parser->get_vertices();
     auto&& normals = parser->get_normals();
-    m_model.set_data(std::move(vertices), std::move(faces), std::move(normals));
+    m_model.set_data(std::move(vertices), 
+                     std::move(faces), 
+                     std::move(normals));
     return true;
 }
 
@@ -41,19 +43,17 @@ Vertices Scene::get_vertices() const {
     auto zip = std::ranges::zip_view(vertices, normals);
 
     for (auto&& [vertex, normal] : zip) {
+        Point temp_normal = normal;
+        Point temp_normal_end = vertex + temp_normal;
         vertex *= cached_matrix;
-        normal *= cached_matrix;
+        temp_normal_end *= cached_matrix;
+        temp_normal = (temp_normal_end - vertex).normalize();
 
         Point sun = m_sun - vertex;
         sun.normalize();
-        normal.normalize();
 
-        double intensity = std::max(0.0, normal.x * sun.x + normal.y * sun.y + normal.z * sun.z);
-        uint8_t red = static_cast<uint8_t>(0xFF * intensity);
-        uint8_t green = static_cast<uint8_t>(0xFF * intensity);
-        uint8_t blue = static_cast<uint8_t>(0xFF * intensity);
-        uint32_t color = (0xFF << 24) | (blue << 16) | (green << 8) | red;
-        vertex.color = color;
+        double intensity = std::max(0.0, temp_normal.dot(sun));
+        vertex.color = static_cast<uint8_t>(0xFF * intensity);
     }
 
     return vertices;

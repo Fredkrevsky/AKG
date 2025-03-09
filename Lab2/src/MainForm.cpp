@@ -77,7 +77,7 @@ void MainForm::draw() {
         auto scale_matrix = m_camera->get_scale_matrix();
         auto projection_matrix = m_camera->get_projection_matrix();
 
-        auto cached_matrix = projection_matrix * view_matrix;
+        auto cached_matrix = projection_matrix * view_matrix * scale_matrix;
     
         std::ranges::for_each(vertices, [&](auto& vertex) {
             vertex *= cached_matrix;

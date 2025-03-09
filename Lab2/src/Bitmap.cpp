@@ -29,7 +29,6 @@ uint32_t Bitmap::get_triangle_color(uint16_t color1, uint16_t color2, uint16_t c
 }
 
 void Bitmap::draw_triangle(Point p1, Point p2, Point p3, uint32_t color){
-    if (p1.y == p2.y && p1.y == p3.y) return;
 
     if (p1.y > p2.y) std::swap(p1, p2);
     if (p1.y > p3.y) std::swap(p1, p3);

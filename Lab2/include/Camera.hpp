@@ -40,7 +40,7 @@ private:
     constexpr static double zfar = 100.0; 
     constexpr static double aspect = width / height; 
     
-    Point eye{0, 0, -10, 1};
+    Point eye{5.0, 5.0, 5.0, 1};
     Point target{0, 0, 0, 1};
     Point up{0, 1, 0, 1};
 
