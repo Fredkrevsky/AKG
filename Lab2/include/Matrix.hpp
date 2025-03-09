@@ -3,13 +3,14 @@
 #include <vector>
 #include <cmath>
 #include <cstdint>
+#include <numbers>
 
 using TransformMatrix = std::array<std::array<double, 4>, 4>;
-using Face = std::vector<int>;
+using Face = std::array<uint32_t, 4>;
 using Faces = std::vector<Face>;
 
-constexpr double PI = 3.141592653589793;
-constexpr double TWO_PI = 2.0 * PI;
+constexpr static double PI = std::numbers::pi_v<double>;
+constexpr static double TWO_PI = 2.0 * PI;
 constexpr static uint32_t WHITE = 0xFFFFFFFF;
 
 
@@ -33,8 +34,9 @@ struct Point {
 
 Point operator*(const TransformMatrix& matrix, const Point& point);
 
-
 using Vertices = std::vector<Point>;
+using Normal = Point;
+using Normals = std::vector<Normal>; 
 
 TransformMatrix operator*(const TransformMatrix& a, const TransformMatrix& b);
 TransformMatrix create_rotation_matrix(const Point& rotate_vector);

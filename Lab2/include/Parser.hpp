@@ -18,6 +18,7 @@ public:
 protected:
     Vertices m_vertices;
     Faces m_faces;
+    Normals m_normals;
 };
 
 

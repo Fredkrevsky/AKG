@@ -1,5 +1,6 @@
 #include "Model.hpp"
 #include <algorithm>
+#include <iostream>
 
 void Model::rotate(const Point &rotate_vector) {
     TransformMatrix rotation_matrix = create_rotation_matrix(rotate_vector);
@@ -16,12 +17,10 @@ void Model::move(const Point &move_vector) {
     });
 }
 
-void Model::set_vertices(Vertices &&vertices) {
+void Model::set_data(Vertices &&vertices, Faces&& faces) {
     m_vertices = vertices;
-}
-
-void Model::set_faces(Faces &&faces) {
     m_faces = faces;
+    calculate_normals();
 }
 
 Vertices Model::get_vertices() const {
@@ -30,4 +29,29 @@ Vertices Model::get_vertices() const {
 
 Faces Model::get_faces() const {
     return m_faces;
+}
+
+Normals Model::get_normals() const {
+    return m_normals;
+}
+
+void Model::calculate_normals() {
+    std::ranges::transform(m_faces, std::back_inserter(m_normals), 
+        [this](const Face& face)
+    {
+        Point A = m_vertices[face[0]];
+        Point B = m_vertices[face[1]];
+        Point C = m_vertices[face[2]];
+
+        Point AB = {B.x - A.x, B.y - A.y, B.z - A.z};
+        Point AC = {C.x - A.x, C.y - A.y, C.z - A.z};
+
+        Normal normal;
+        normal.x = AB.y * AC.z - AB.z * AC.y;
+        normal.y = AB.z * AC.x - AB.x * AC.z;
+        normal.z = AB.x * AC.y - AB.y * AC.x;
+        normal.normalize();
+
+        return normal;
+    }); 
 }

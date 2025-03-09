@@ -3,6 +3,7 @@
 #include <memory>
 #include <format>
 #include <map>
+#include <iostream>
 
 using namespace std::string_literals;
 
@@ -29,37 +30,65 @@ void MainForm::run_main_loop() {
     while (m_window.isOpen()) {
         sf::Event event;
         while (m_window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                m_window.close();
-            }
-            else if (event.type == sf::Event::KeyPressed) {
-                on_key_press(event.key.code);
-            }
-            else if (event.type == sf::Event::MouseWheelScrolled) {
-                if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
-                    bool is_getting_closer = event.mouseWheelScroll.delta > 0;
-                    m_camera->scale(is_getting_closer);
-                }
+            switch (event.type) {
+                case sf::Event::Closed:
+                    m_window.close();
+                    break;
+
+                case sf::Event::KeyPressed:
+                    on_key_press(event.key.code);
+                    break;
+
+                case sf::Event::MouseWheelScrolled:
+                    if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
+                        bool is_getting_closer = event.mouseWheelScroll.delta > 0;
+                        m_camera->scale(is_getting_closer);
+                    }
+                    break;
+
+                case sf::Event::GainedFocus:
+                    m_window.setMouseCursorVisible(false);
+                    sf::Mouse::setPosition(center, m_window);
+                    break;
+
+                case sf::Event::LostFocus:
+                    m_window.setMouseCursorVisible(true);
+                    break;
+
+                default:
+                    break;
             }
         }
 
-        handle_mouse_rotation();
-        handle_keyboard_movement();
-        draw();
+        if (m_window.hasFocus()){
+            handle_mouse_rotation();
+            handle_keyboard_movement();
+            draw();
+        }
     }
 }
 
 void MainForm::draw() {
     static sf::Sprite sprite{m_texture};
 
-    auto transform_vertices = [&](Vertices& vertices){
-        TransformMatrix transform_matrix = m_camera->get_transform_matrix();
+    auto transform_vertices = [&](Vertices& vertices) {
+        auto view_matrix = m_camera->get_view_matrix();
+        auto viewport_matrix = m_camera->get_viewport_matrix();
+        auto scale_matrix = m_camera->get_scale_matrix();
+        auto projection_matrix = m_camera->get_projection_matrix();
+
+        auto cached_matrix = projection_matrix * view_matrix;
     
         std::ranges::for_each(vertices, [&](auto& vertex) {
-            vertex *= transform_matrix;
-            if (vertex.w >= 1.0){
-                vertex *= (1 / vertex.w);
+            vertex *= cached_matrix;
+            if (vertex.z < -vertex.w || vertex.z > vertex.w) {
+                vertex.w = 0;
+                return;
             }
+            if (vertex.w != 0) {
+                vertex *= 1 / vertex.w;
+            }
+            vertex *= viewport_matrix;
         });
     };
 

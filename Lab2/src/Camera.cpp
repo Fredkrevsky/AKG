@@ -76,7 +76,7 @@ void Camera::scale(bool is_getting_closer) {
     );
 }
 
-TransformMatrix Camera::get_transform_matrix() const {
+TransformMatrix Camera::get_view_matrix() const {
     Point ZAxis = (eye - target).normalize();
     Point XAxis = up.cross(ZAxis).normalize();
     Point YAxis = ZAxis.cross(XAxis).normalize();
@@ -88,6 +88,10 @@ TransformMatrix Camera::get_transform_matrix() const {
         {0, 0, 0, 1}
     }};
 
+    return view_matrix;
+}
+
+TransformMatrix Camera::get_projection_matrix() const {
     constexpr double f = 1.0 / std::tan(fov * 0.5);
     constexpr TransformMatrix projection_matrix = {{
         {f / aspect, 0,  0,  0},
@@ -96,21 +100,27 @@ TransformMatrix Camera::get_transform_matrix() const {
         {0, 0, -1,  0}
     }};
 
+    return projection_matrix;
+}
+
+TransformMatrix Camera::get_viewport_matrix() const {
     constexpr TransformMatrix viewport_matrix = {{
         {width / 2, 0, 0, width / 2},
         {0, -height / 2, 0, height / 2},
         {0, 0, 1, 0},
         {0, 0, 0, 1}
     }};
+    return viewport_matrix;
+}
 
+TransformMatrix Camera::get_scale_matrix() const {
     TransformMatrix scale_matrix = {{
         {scale_factor, 0, 0, 0},
         {0, scale_factor, 0, 0},
         {0, 0, scale_factor, 0},
         {0, 0, 0, 1}
     }}; 
-
-    return viewport_matrix * projection_matrix * view_matrix * scale_matrix;
+    return scale_matrix;
 }
 
 Point Camera::get_eye() const {

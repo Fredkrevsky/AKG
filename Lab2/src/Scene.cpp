@@ -1,6 +1,7 @@
 #include "Scene.hpp"
 #include <memory>
 #include <algorithm>
+#include <ranges>
 
 using namespace std::string_literals;
 
@@ -21,9 +22,11 @@ bool Scene::initialize() {
     if (!parser){
         return false;
     }
+
     parser->parse_file(file_path);
-    m_model.set_vertices(parser->get_vertices());
-    m_model.set_faces(parser->get_faces());
+    auto faces = parser->get_faces();
+    auto vertices = parser->get_vertices();
+    m_model.set_data(std::move(vertices), std::move(faces));
     return true;
 }
 
@@ -46,5 +49,17 @@ Vertices Scene::get_vertices() const {
 }
 
 Faces Scene::get_faces() const {
-    return m_model.get_faces();
+    Faces faces = m_model.get_faces();
+    Normals normals = m_model.get_normals();
+
+    for (auto&& [face, normal] : std::views::zip(faces, normals)) {
+        double intensity = std::max(0.0, normal.x * m_sun.x + normal.y * m_sun.y + normal.z * m_sun.z);
+        uint8_t red = static_cast<uint8_t>(0xFF * intensity);
+        uint8_t green = static_cast<uint8_t>(0xFF * intensity);
+        uint8_t blue = static_cast<uint8_t>(0xFF * intensity);
+        uint32_t color = (0xFF << 24) | (blue << 16) | (green << 8) | red;
+        face[3] = color;
+    }
+
+    return faces;
 }

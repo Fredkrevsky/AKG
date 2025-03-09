@@ -12,6 +12,7 @@ public:
 
 private:
     std::vector<uint32_t> m_data; 
+    std::vector<double> m_z_buffer;
     int m_width;
     int m_height;
 };

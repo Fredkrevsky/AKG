@@ -17,7 +17,11 @@ public:
     void rotate(double angle_x, double angle_y);
     void scale(bool is_getting_closer);
     
-    TransformMatrix get_transform_matrix() const;
+    TransformMatrix get_projection_matrix() const;
+    TransformMatrix get_view_matrix() const;
+    TransformMatrix get_scale_matrix() const;
+    TransformMatrix get_viewport_matrix() const;
+
     Point get_eye() const;
     Point get_target() const;
     Point get_up() const;

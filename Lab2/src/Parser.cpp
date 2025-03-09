@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <nlohmann/json.hpp>
-
+#include <iostream>
 
 std::unique_ptr<Parser> Parser::create_parser(const std::string& format){
     std::unique_ptr<Parser> parser{};
@@ -25,11 +25,11 @@ Faces Parser::get_faces() const {
 
 
 void ParserOBJ::parse_file(const std::string& file_path) {
-
     std::ifstream file(file_path);
     if (!file.is_open()) { return; }
 
     std::string line;
+
     while (std::getline(file, line)) {
         std::istringstream iss(line);
         std::string type;
@@ -42,14 +42,20 @@ void ParserOBJ::parse_file(const std::string& file_path) {
         } 
         else if (type == "f") {
             Face face;
-            std::string vertex_data;
-            while (iss >> vertex_data) {
+            for (int i = 0; i < 3; ++i) {
+                std::string vertex_data;
+                iss >> vertex_data;
                 std::istringstream vertex_stream(vertex_data);
                 std::string vertex_index_str;
                 std::getline(vertex_stream, vertex_index_str, '/');
-                face.push_back(std::stoi(vertex_index_str) - 1);
+                face[i] = std::stoi(vertex_index_str) - 1;
             }
             m_faces.push_back(face);
+        }
+        else if (type == "vn") {
+            Point normal{0, 0, 0, 1};
+            iss >> normal.x >> normal.y >> normal.z;
+            m_normals.push_back(normal);
         }
     }
 }
@@ -122,9 +128,9 @@ void ParserGLTF::parse_file(const std::string& file_path) {
 
                 for (size_t index = 0; index < count; index += 3) {
                     m_faces.emplace_back(Face{
-                        static_cast<int>(data[index]),
-                        static_cast<int>(data[index + 1]),
-                        static_cast<int>(data[index + 2])
+                        static_cast<uint32_t>(data[index]),
+                        static_cast<uint32_t>(data[index + 1]),
+                        static_cast<uint32_t>(data[index + 2])
                     });
                 }
             }

@@ -18,4 +18,5 @@ private:
 
     Model m_model;
     Point m_model_position;
+    Point m_sun{10.0, 10.0, 10.0};
 };
