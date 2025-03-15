@@ -17,7 +17,7 @@ constexpr static uint32_t WHITE = 0xFFFFFFFF;
 
 struct Point {
     double x{0.0}, y{0.0}, z{0.0}, w{1.0};
-    uint8_t color{0xFF};
+    uint32_t color{0xFF'FF'FF'FF};
     
     double dot(const Point& other) const;
     Point cross(const Point& other) const;

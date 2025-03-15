@@ -15,6 +15,7 @@ MainForm::MainForm() noexcept
 { 
     m_window.setMouseCursorVisible(false);
     m_texture.create(width, height);
+    m_scene.set_camera(m_camera);
     m_logger.set_camera(m_camera);
     m_logger.set_fps_counter(m_counter);
 }
@@ -71,31 +72,8 @@ void MainForm::run_main_loop() {
 void MainForm::draw() {
     static sf::Sprite sprite{m_texture};
 
-    auto transform_vertices = [&](Vertices& vertices) {
-        auto view_matrix = m_camera->get_view_matrix();
-        auto viewport_matrix = m_camera->get_viewport_matrix();
-        auto scale_matrix = m_camera->get_scale_matrix();
-        auto projection_matrix = m_camera->get_projection_matrix();
-
-        auto cached_matrix = projection_matrix * view_matrix * scale_matrix;
-    
-        std::ranges::for_each(vertices, [&](auto& vertex) {
-            vertex *= cached_matrix;
-            if (vertex.z < -vertex.w || vertex.z > vertex.w) {
-                vertex.w = 0;
-                return;
-            }
-            if (vertex.w != 0) {
-                vertex *= 1 / vertex.w;
-            }
-            vertex *= viewport_matrix;
-        });
-    };
-
     auto vertices = m_scene.get_vertices();
-    auto faces = m_scene.get_faces();
-    transform_vertices(vertices);
-
+    auto faces = m_scene.get_faces();    
     m_bitmap.draw_faces(vertices, faces);
     m_texture.update(m_bitmap.data());
 

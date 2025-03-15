@@ -18,16 +18,6 @@ const uint8_t* Bitmap::data() const {
     return reinterpret_cast<const uint8_t*>(m_data.data());
 }
 
-uint32_t Bitmap::get_triangle_color(uint16_t color1, uint16_t color2, uint16_t color3) {
-
-    uint32_t avg_color = static_cast<uint32_t>(color1 + color2 + color3) / 3;
-
-    const uint32_t result = (0xFF << 24) |
-        (avg_color << 16) | (avg_color << 8) | avg_color;
-        
-    return result;
-}
-
 void Bitmap::draw_triangle(Point p1, Point p2, Point p3, uint32_t color){
 
     if (p1.y > p2.y) std::swap(p1, p2);
@@ -99,12 +89,27 @@ void Bitmap::draw_faces(const Vertices& points, const Faces& faces) {
     
     clear();
 
+    auto get_triangle_color = [](uint32_t color1, uint32_t color2, uint32_t color3) -> uint32_t {
+        uint16_t grey1 = (color1 >> 16) & 255;
+        uint16_t grey2 = (color2 >> 16) & 255;
+        uint16_t grey3 = (color3 >> 16) & 255;
+    
+        uint32_t avg_color = static_cast<uint32_t>(grey1 + grey2 + grey3) / 3;
+    
+        const uint32_t result = (0xFF << 24) |
+            (avg_color << 16) | (avg_color << 8) | avg_color;
+            
+        return result;
+    };
+
     std::ranges::for_each(faces, [&](const Face& face) {
         const auto& point1 = points[face[0]];
         const auto& point2 = points[face[1]];
         const auto& point3 = points[face[2]];
 
-        if (point1.w > 0 && point2.w > 0 && point3.w > 0) {
+        if (point1.w > 0 && point2.w > 0 && point3.w > 0 &&
+            point1.color > 0 && point2.color > 0 && point3.color > 0) 
+        {
             uint32_t color = get_triangle_color(point1.color, point2.color, point3.color);
             draw_triangle(point1, point2, point3, color);
         }
