@@ -46,21 +46,14 @@ Vertices Scene::get_vertices() const {
         auto eye = m_camera->get_eye();
 
         for (auto&& [vertex, normal] : zip) {
-            Point temp_normal = normal;
-            Point temp_normal_end = vertex + temp_normal;
             vertex *= cached_matrix;
-            temp_normal_end *= cached_matrix;
-            temp_normal = (temp_normal_end - vertex).normalize();
+            Point new_normal = normal;
+            new_normal *= rotation_matrix;
+            new_normal.normalize();
     
             Point sun = (eye - vertex).normalize();
-            double intensity = temp_normal.dot(sun);
-            if (intensity >= 0){
-                uint8_t color = 0xFF * intensity;
-                vertex.color = (0xFF << 24) | (color << 16) | (color << 8) | color;
-            }
-            else {
-                vertex.color = 0;
-            }
+            double intensity = new_normal.dot(sun);
+            vertex.set_color(intensity);
         }
     };
 

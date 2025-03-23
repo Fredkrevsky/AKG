@@ -32,6 +32,8 @@ struct Point {
     Point& operator*=(const TransformMatrix& matrix);
     
     Point& normalize();
+
+    void set_color(double intensity);
 };
 
 Point operator*(const TransformMatrix& matrix, const Point& point);

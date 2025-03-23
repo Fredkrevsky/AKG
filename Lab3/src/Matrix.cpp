@@ -2,6 +2,7 @@
 #include <array>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 
 Point Point::operator*(const TransformMatrix& matrix) const {
@@ -88,6 +89,12 @@ Point& Point::normalize() {
     }
     return *this;
 }
+
+void Point::set_color(double intensity) {
+    uint8_t grey = static_cast<uint8_t>(std::clamp(0xFF * intensity, 0.0, 255.0));
+    color = (0xFF << 24) | (grey << 16) | (grey << 8) | grey;
+}
+
 
 Point operator*(const TransformMatrix& matrix, const Point& point) {
     Point result{
