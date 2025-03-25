@@ -72,9 +72,9 @@ void MainForm::run_main_loop() {
 void MainForm::draw() {
     static sf::Sprite sprite{m_texture};
 
-    auto vertices = m_scene.get_vertices();
+    auto points = m_scene.get_points();
     auto faces = m_scene.get_faces();    
-    m_bitmap.draw_faces(vertices, faces);
+    m_bitmap.draw(points, faces);
     m_texture.update(m_bitmap.data());
 
     m_window.clear();

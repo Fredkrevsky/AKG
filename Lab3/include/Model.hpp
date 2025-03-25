@@ -1,6 +1,6 @@
 #pragma once
 #include "Matrix.hpp"
-
+#include "Point.hpp"
 
 class Model final {
 public:
@@ -8,12 +8,10 @@ public:
 
     void set_data(Vertices&& vertices, Faces&& faces, Normals&& normals);
 
-    Vertices get_vertices() const;
+    Points get_points() const;
     Faces get_faces() const;
-    Normals get_normals() const;
 
 private:
-    Vertices m_vertices;
+    Points m_points;
     Faces m_faces;
-    Normals m_normals;
 };

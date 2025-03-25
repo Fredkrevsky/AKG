@@ -17,11 +17,11 @@ const uint8_t* Bitmap::data() const {
     return reinterpret_cast<const uint8_t*>(m_data.data());
 }
 
-void Bitmap::draw_triangle(Vector4D v1, Vector4D v2, Vector4D v3) {
+void Bitmap::draw_triangle(Point p1, Point p2, Point p3) {
 
-    uint32_t c1 = v1.color;
-    uint32_t c2 = v2.color;
-    uint32_t c3 = v3.color;
+    const auto& [v1, n1, c1] = p1;
+    const auto& [v2, n2, c2] = p2;
+    const auto& [v3, n3, c3] = p3;
 
     int min_x = std::max(0, static_cast<int>(std::min({v1.x, v2.x, v3.x})));
     int max_x = std::min(m_width - 1, static_cast<int>(std::max({v1.x, v2.x, v3.x})));
@@ -55,7 +55,7 @@ void Bitmap::draw_triangle(Vector4D v1, Vector4D v2, Vector4D v3) {
 }
 
 
-void Bitmap::draw_faces(const Vertices& points, const Faces& faces) {
+void Bitmap::draw(const Points& points, const Faces& faces) {
     
     clear();
 
@@ -63,11 +63,14 @@ void Bitmap::draw_faces(const Vertices& points, const Faces& faces) {
         const auto& p1 = points[face[0]];
         const auto& p2 = points[face[1]];
         const auto& p3 = points[face[2]];
+        const auto& [v1, n1, c1] = p1;
+        const auto& [v2, n2, c2] = p2;
+        const auto& [v3, n3, c3] = p3;
 
-        if (p1.w > 0 && p2.w > 0 && p3.w > 0 &&
-            p1.color != Color::NO_COLOR && 
-            p2.color != Color::NO_COLOR && 
-            p3.color != Color::NO_COLOR) 
+        if (v1.w > 0 && v2.w > 0 && v3.w > 0 &&
+            c1 != Color::Basic::Transparent && 
+            c2 != Color::Basic::Transparent && 
+            c3 != Color::Basic::Transparent) 
         {
             draw_triangle(p1, p2, p3);
         }

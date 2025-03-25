@@ -1,5 +1,6 @@
 #pragma once
 #include "Matrix.hpp"
+#include "Point.hpp"
 
 class Bitmap final {
 public:
@@ -7,11 +8,11 @@ public:
     
     const uint8_t* data() const;
     void clear();
-    void draw_faces(const Vertices& points, 
-                    const Faces& faces);
+    void draw(const Points& points,
+              const Faces& faces);
 
 private:
-    void draw_triangle(Vector4D p1, Vector4D p2, Vector4D p3);
+    void draw_triangle(Point p1, Point p2, Point p3);
 
 private:
     std::vector<uint32_t> m_data; 

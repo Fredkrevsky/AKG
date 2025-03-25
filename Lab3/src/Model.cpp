@@ -1,21 +1,24 @@
 #include "Model.hpp"
 #include <algorithm>
-#include <iostream>
+#include <ranges>
 
 void Model::set_data(Vertices &&vertices, Faces&& faces, Normals&& normals) {
-    m_vertices = vertices;
+    m_points.clear();
+    auto points_zip = std::ranges::zip_view(vertices, normals);
+    for (auto&& [vertex, normal] : points_zip){
+        m_points.emplace_back(Point{
+            std::move(vertex), 
+            std::move(normal), 
+            Color::Basic::White
+        });
+    }
     m_faces = faces;
-    m_normals = normals;
 }
 
-Vertices Model::get_vertices() const {
-    return m_vertices;
+Points Model::get_points() const {
+    return m_points;
 }
 
 Faces Model::get_faces() const {
     return m_faces;
-}
-
-Normals Model::get_normals() const {
-    return m_normals;
 }

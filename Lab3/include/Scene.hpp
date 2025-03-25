@@ -12,7 +12,7 @@ public:
     void rotate_model(const Vector4D& rotate_vector);
     void move_model(const Vector4D& move_vector);
 
-    Vertices get_vertices() const;
+    Points get_points() const;
     Faces get_faces() const;
 
 private:

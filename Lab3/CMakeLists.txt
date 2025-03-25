@@ -25,6 +25,7 @@ add_executable(
     src/Model.cpp
     src/Scene.cpp
     src/Bitmap.cpp
+    src/Color.cpp
 )
 
 target_include_directories(

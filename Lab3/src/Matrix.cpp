@@ -184,10 +184,3 @@ TransformMatrix create_scale_matrix(double scalar){
         {0, 0, 0, 1}
     }};
 }
-
-double normalize_angle(double angle) {
-    angle = std::fmod(angle, TWO_PI);
-    if (angle > PI) angle -= TWO_PI;
-    if (angle < -PI) angle += TWO_PI;
-    return angle;
-}
