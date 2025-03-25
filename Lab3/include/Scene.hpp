@@ -9,8 +9,8 @@ public:
 
     [[nodiscard]] bool initialize();
     void set_camera(std::shared_ptr<Camera> camera);
-    void rotate_model(const Point& rotate_vector);
-    void move_model(const Point& move_vector);
+    void rotate_model(const Vector4D& rotate_vector);
+    void move_model(const Vector4D& move_vector);
 
     Vertices get_vertices() const;
     Faces get_faces() const;
@@ -20,5 +20,5 @@ private:
 
     Model m_model;
     std::shared_ptr<Camera> m_camera;
-    Point m_model_position, m_model_rotation;
+    Vector4D m_model_position, m_model_rotation;
 };

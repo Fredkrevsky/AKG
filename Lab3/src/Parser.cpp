@@ -47,7 +47,7 @@ void ParserOBJ::parse_file(const std::string& file_path) {
         iss >> type;
 
         if (type == "v") {
-            Point vertex{0, 0, 0, 1};
+            Vector4D vertex{0, 0, 0, 1};
             iss >> vertex.x >> vertex.y >> vertex.z;
             m_vertices.push_back(vertex);
         } 
@@ -64,7 +64,7 @@ void ParserOBJ::parse_file(const std::string& file_path) {
             m_faces.push_back(face);
         }
         else if (type == "vn") {
-            Point normal{0, 0, 0, 1};
+            Vector4D normal{0, 0, 0, 1};
             iss >> normal.x >> normal.y >> normal.z;
             m_normals.push_back(normal);
         }

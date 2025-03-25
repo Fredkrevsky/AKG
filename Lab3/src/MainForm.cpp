@@ -112,13 +112,13 @@ void MainForm::handle_keyboard_movement() {
         {sf::Keyboard::D, MoveDirection::RIGHT}
     }};
 
-    constexpr static std::array<std::pair<sf::Keyboard::Key, Point>, 3> model_rotation_keys = {{
+    constexpr static std::array<std::pair<sf::Keyboard::Key, Vector4D>, 3> model_rotation_keys = {{
         {sf::Keyboard::Num1, {rotation_angle, 0, 0}},
         {sf::Keyboard::Num2, {0, rotation_angle, 0}},
         {sf::Keyboard::Num3, {0, 0, rotation_angle}}
     }};
 
-    constexpr static std::array<std::pair<sf::Keyboard::Key, Point>, 6> model_move_keys = {{
+    constexpr static std::array<std::pair<sf::Keyboard::Key, Vector4D>, 6> model_move_keys = {{
         {sf::Keyboard::Numpad1, {move_distance, 0, 0}},
         {sf::Keyboard::Numpad2, {-move_distance, 0, 0}},
         {sf::Keyboard::Numpad3, {0, move_distance, 0}},

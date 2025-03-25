@@ -2,11 +2,11 @@
 #include <algorithm>
 
 void Camera::move(MoveDirection direction) {
-    Point forward = (target - eye).normalize();
-    Point left = up.cross(forward).normalize();
+    Vector4D forward = (target - eye).normalize();
+    Vector4D left = up.cross(forward).normalize();
     
-    Point forward_move_vector = forward * camera_speed;
-    Point left_move_vector = left * camera_speed;
+    Vector4D forward_move_vector = forward * camera_speed;
+    Vector4D left_move_vector = left * camera_speed;
 
     switch (direction)
     {
@@ -38,9 +38,9 @@ void Camera::rotate(double delta_x, double delta_y) {
     };
 
     constexpr double max_pitch = radians(89.0);
-    constexpr static Point world_up{0.0, 1.0, 0.0, 0.0};
+    constexpr static Vector4D world_up{0.0, 1.0, 0.0, 0.0};
 
-    Point forward = (target - eye).normalize();
+    Vector4D forward = (target - eye).normalize();
     double yaw = std::atan2(forward.z, forward.x);
     double pitch = std::asin(forward.y);
 
@@ -56,7 +56,7 @@ void Camera::rotate(double delta_x, double delta_y) {
     };
     forward.normalize();
 
-    Point right = world_up.cross(forward).normalize();
+    Vector4D right = world_up.cross(forward).normalize();
     up = forward.cross(right).normalize();
     target = eye + forward;
 }
@@ -74,9 +74,9 @@ void Camera::scale(bool is_getting_closer) {
 }
 
 TransformMatrix Camera::get_view_matrix() const {
-    Point ZAxis = (eye - target).normalize();
-    Point XAxis = up.cross(ZAxis).normalize();
-    Point YAxis = ZAxis.cross(XAxis).normalize();
+    Vector4D ZAxis = (eye - target).normalize();
+    Vector4D XAxis = up.cross(ZAxis).normalize();
+    Vector4D YAxis = ZAxis.cross(XAxis).normalize();
 
     return {{
         {XAxis.x, XAxis.y, XAxis.z, -XAxis.dot(eye)},
@@ -114,15 +114,15 @@ TransformMatrix Camera::get_scale_matrix() const {
     }}; 
 }
 
-Point Camera::get_eye() const {
+Vector4D Camera::get_eye() const {
     return eye;
 }
 
-Point Camera::get_target() const {
+Vector4D Camera::get_target() const {
     return target;
 }
 
-Point Camera::get_up() const {
+Vector4D Camera::get_up() const {
     return up;
 }
 

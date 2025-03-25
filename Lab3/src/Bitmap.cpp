@@ -1,6 +1,5 @@
 #include "Bitmap.hpp"
 #include <algorithm>
-#include <iostream>
 
 Bitmap::Bitmap(int width, int height) noexcept 
     : m_data(width * height)
@@ -18,100 +17,59 @@ const uint8_t* Bitmap::data() const {
     return reinterpret_cast<const uint8_t*>(m_data.data());
 }
 
-void Bitmap::draw_triangle(Point p1, Point p2, Point p3, uint32_t color){
+void Bitmap::draw_triangle(Vector4D v1, Vector4D v2, Vector4D v3) {
 
-    if (p1.y > p2.y) std::swap(p1, p2);
-    if (p1.y > p3.y) std::swap(p1, p3);
-    if (p2.y > p3.y) std::swap(p2, p3);
+    uint32_t c1 = v1.color;
+    uint32_t c2 = v2.color;
+    uint32_t c3 = v3.color;
 
-    const int x1 = static_cast<int>(p1.x);
-    const int y1 = static_cast<int>(p1.y);
-    const int x2 = static_cast<int>(p2.x);
-    const int y2 = static_cast<int>(p2.y);
-    const int x3 = static_cast<int>(p3.x);
-    const int y3 = static_cast<int>(p3.y);
-    
-    const double z1 = p1.z;
-    const double z2 = p2.z;
-    const double z3 = p3.z;
-    
-    const int total_height = y3 - y1;
-    if (total_height == 0) return;
+    int min_x = std::max(0, static_cast<int>(std::min({v1.x, v2.x, v3.x})));
+    int max_x = std::min(m_width - 1, static_cast<int>(std::max({v1.x, v2.x, v3.x})));
+    int min_y = std::max(0, static_cast<int>(std::min({v1.y, v2.y, v3.y})));
+    int max_y = std::min(m_height - 1, static_cast<int>(std::max({v1.y, v2.y, v3.y})));
 
-    int min_i = std::max(-y1, 0);
-    int max_i = std::min(y3, m_height) - y1;
-    for (int i = min_i; i < max_i; ++i) {
-        const bool second_half = i > (y2 - y1) || y2 == y1;
-        const int segment_height = second_half ? (y3 - y2) : (y2 - y1);
-        if (segment_height == 0) continue;
+    double denominator = (v2.y - v3.y) * (v1.x - v3.x) + (v3.x - v2.x) * (v1.y - v3.y);
+    if (std::abs(denominator) < 1e-6) return;
 
-        const double alpha = static_cast<double>(i) / total_height;
-        const double beta = static_cast<double>(second_half ? (i - (y2 - y1)) : i) / segment_height;
+    for (int y = min_y; y <= max_y; ++y) {
+        for (int x = min_x; x <= max_x; ++x) {
+            double u = ((v2.y - v3.y) * (x - v3.x) + (v3.x - v2.x) * (y - v3.y)) / denominator;
+            double v = ((v3.y - v1.y) * (x - v3.x) + (v1.x - v3.x) * (y - v3.y)) / denominator;
+            double w = 1.0 - u - v;
 
-        int Ax = x1 + (x3 - x1) * alpha;
-        int Ay = y1 + i;
-        double Az = z1 + (z3 - z1) * alpha;
+            if (u < 0 || v < 0 || w < 0) continue;
 
-        int Bx{}, By{};
-        double Bz{};
-        if (second_half) {
-            Bx = x2 + (x3 - x2) * beta;
-            By = y2 + (i - (y2 - y1));
-            Bz = z2 + (z3 - z2) * beta;
-        } else {
-            Bx = x1 + (x2 - x1) * beta;
-            By = y1 + i;
-            Bz = z1 + (z2 - z1) * beta;
-        }
+            double z = u * v1.z + v * v2.z + w * v3.z;
+            int index = y * m_width + x;
 
-        if (Ax > Bx) {
-            std::swap(Ax, Bx);
-            std::swap(Ay, By);
-            std::swap(Az, Bz);
-        }
-
-        int min_x = std::max(Ax, 0);
-        int max_x = std::min(Bx, m_width);
-        int index = Ay * m_width;
-
-        for (int x = min_x; x < max_x; ++x) {
-            double t = (x - Ax) / static_cast<double>(Bx - Ax);
-            double z = Az + (Bz - Az) * t;
-            if (z < m_z_buffer[index + x]) {
-                m_data[index + x] = color; 
-                m_z_buffer[index + x] = z;
+            if (z < m_z_buffer[index]){
+                uint32_t grey = static_cast<double>(c1 & 255) * u + 
+                                static_cast<double>(c2 & 255) * v + 
+                                static_cast<double>(c3 & 255) * w;
+                uint32_t color = (255 << 24) | (grey << 16) | (grey << 8) | grey;
+                m_z_buffer[index] = z;
+                m_data[index] = color;
             }
         }
     }
 }
 
+
 void Bitmap::draw_faces(const Vertices& points, const Faces& faces) {
     
     clear();
 
-    auto get_triangle_color = [](uint32_t color1, uint32_t color2, uint32_t color3) -> uint32_t {
-        uint16_t grey1 = (color1 >> 16) & 255;
-        uint16_t grey2 = (color2 >> 16) & 255;
-        uint16_t grey3 = (color3 >> 16) & 255;
-    
-        uint32_t avg_color = static_cast<uint32_t>(grey1 + grey2 + grey3) / 3;
-    
-        const uint32_t result = (0xFF << 24) |
-            (avg_color << 16) | (avg_color << 8) | avg_color;
-            
-        return result;
-    };
-
     std::ranges::for_each(faces, [&](const Face& face) {
-        const auto& point1 = points[face[0]];
-        const auto& point2 = points[face[1]];
-        const auto& point3 = points[face[2]];
+        const auto& p1 = points[face[0]];
+        const auto& p2 = points[face[1]];
+        const auto& p3 = points[face[2]];
 
-        if (point1.w > 0 && point2.w > 0 && point3.w > 0 &&
-            point1.color > 0 && point2.color > 0 && point3.color > 0) 
+        if (p1.w > 0 && p2.w > 0 && p3.w > 0 &&
+            p1.color != Color::NO_COLOR && 
+            p2.color != Color::NO_COLOR && 
+            p3.color != Color::NO_COLOR) 
         {
-            uint32_t color = get_triangle_color(point1.color, point2.color, point3.color);
-            draw_triangle(point1, point2, point3, color);
+            draw_triangle(p1, p2, p3);
         }
     });
 }

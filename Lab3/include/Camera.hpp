@@ -22,9 +22,9 @@ public:
     TransformMatrix get_scale_matrix() const;
     TransformMatrix get_viewport_matrix() const;
 
-    Point get_eye() const;
-    Point get_target() const;
-    Point get_up() const;
+    Vector4D get_eye() const;
+    Vector4D get_target() const;
+    Vector4D get_up() const;
     double get_scale() const;
     
 private:
@@ -40,9 +40,9 @@ private:
     constexpr static double zfar = 100.0; 
     constexpr static double aspect = width / height; 
     
-    Point eye{5.0, 5.0, 5.0, 1};
-    Point target{5.0, 5.0, 0, 1};
-    Point up{0, 1, 0, 1};
+    Vector4D eye{5.0, 5.0, 5.0, 1};
+    Vector4D target{5.0, 5.0, 0, 1};
+    Vector4D up{0, 1, 0, 1};
 
     double scale_factor{1.0};
 };

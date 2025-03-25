@@ -11,7 +11,7 @@ public:
                     const Faces& faces);
 
 private:
-    void draw_triangle(Point p1, Point p2, Point p3, uint32_t color);
+    void draw_triangle(Vector4D p1, Vector4D p2, Vector4D p3);
 
 private:
     std::vector<uint32_t> m_data; 

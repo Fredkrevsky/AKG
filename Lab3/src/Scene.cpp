@@ -28,11 +28,11 @@ void Scene::set_camera(std::shared_ptr<Camera> camera) {
     m_camera = camera;
 }
 
-void Scene::rotate_model(const Point &rotate_vector) {
+void Scene::rotate_model(const Vector4D &rotate_vector) {
     m_model_rotation += rotate_vector;
 }
 
-void Scene::move_model(const Point &move_vector) {
+void Scene::move_model(const Vector4D &move_vector) {
     m_model_position += move_vector;
 }
 
@@ -47,13 +47,13 @@ Vertices Scene::get_vertices() const {
 
         for (auto&& [vertex, normal] : zip) {
             vertex *= cached_matrix;
-            Point new_normal = normal;
+            Vector4D new_normal = normal;
             new_normal *= rotation_matrix;
             new_normal.normalize();
     
-            Point sun = (eye - vertex).normalize();
+            Vector4D sun = (eye - vertex).normalize();
             double intensity = new_normal.dot(sun);
-            vertex.set_color(intensity);
+            vertex.color = Color::from_intensity(intensity);
         }
     };
 
