@@ -36,4 +36,5 @@ private:
 
     sf::Vector2i mouse_press_position{};
     sf::Vector2i center{width / 2, height / 2};
+    bool m_needs_update{true};
 };

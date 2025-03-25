@@ -12,8 +12,10 @@ MainForm::MainForm() noexcept
     , m_bitmap(width, height)
     , m_camera(std::make_shared<Camera>())
     , m_counter(std::make_shared<FPSCounter>())
+    , m_needs_update(true)
 { 
     m_window.setMouseCursorVisible(false);
+    m_window.setFramerateLimit(144);
     m_texture.create(width, height);
     m_scene.set_camera(m_camera);
     m_logger.set_camera(m_camera);
@@ -72,10 +74,13 @@ void MainForm::run_main_loop() {
 void MainForm::draw() {
     static sf::Sprite sprite{m_texture};
 
-    auto points = m_scene.get_points();
-    auto faces = m_scene.get_faces();    
-    m_bitmap.draw(points, faces);
-    m_texture.update(m_bitmap.data());
+    if (m_needs_update){
+        auto points = m_scene.get_points();
+        auto faces = m_scene.get_faces();    
+        m_bitmap.draw(points, faces);
+        m_texture.update(m_bitmap.data());
+        m_needs_update = false;
+    }
 
     m_window.clear();
     m_window.draw(sprite);
@@ -95,7 +100,10 @@ void MainForm::handle_mouse_rotation() {
     if (delta_x != 0 || delta_y != 0) {
         double angle_x = delta_x * sensitivity;
         double angle_y = delta_y * sensitivity;
+
         m_camera->rotate(angle_x, angle_y);
+        m_scene.invalidate_points();
+        m_needs_update = true;
 
         sf::Mouse::setPosition(center, m_window);
     }
@@ -131,6 +139,8 @@ void MainForm::handle_keyboard_movement() {
         const auto& [key, direction] = element;
         if (sf::Keyboard::isKeyPressed(key)) {
             m_camera->move(direction);
+            m_scene.invalidate_points();
+            m_needs_update = true;
         }
     });
 
@@ -138,6 +148,7 @@ void MainForm::handle_keyboard_movement() {
         const auto& [key, rotation] = element;
         if (sf::Keyboard::isKeyPressed(key)) {
             m_scene.rotate_model(rotation);
+            m_needs_update = true;
         }
     });
 
@@ -145,6 +156,7 @@ void MainForm::handle_keyboard_movement() {
         const auto& [key, move] = element;
         if (sf::Keyboard::isKeyPressed(key)) {
             m_scene.move_model(move);
+            m_needs_update = true;
         }
     });
 }

@@ -22,6 +22,9 @@ bool Scene::initialize() {
     m_model.set_data(std::move(vertices), 
                      std::move(faces), 
                      std::move(normals));
+
+    m_points = m_model.get_points();
+    m_is_changed = true;
     return true;
 }
 
@@ -31,13 +34,19 @@ void Scene::set_camera(std::shared_ptr<Camera> camera) {
 
 void Scene::rotate_model(const Vector4D &rotate_vector) {
     m_model_rotation += rotate_vector;
+    m_is_changed = true;
 }
 
 void Scene::move_model(const Vector4D &move_vector) {
     m_model_position += move_vector;
+    m_is_changed = true;
 }
 
-Points Scene::get_points() const {
+void Scene::invalidate_points(){
+    m_is_changed = true;
+}
+
+Points Scene::get_points() {
     auto move_matrix = create_move_matrix(m_model_position);
     auto rotation_matrix = create_rotation_matrix(m_model_rotation);
     auto cached_matrix = move_matrix * rotation_matrix;
@@ -79,10 +88,13 @@ Points Scene::get_points() const {
         });
     };
 
-    auto points = m_model.get_points();
-    fill_vertices_color(points);
-    transform_vertices(points);
-    return points;
+    if (m_is_changed){
+        m_points = m_model.get_points();
+        fill_vertices_color(m_points);
+        transform_vertices(m_points);
+        m_is_changed = false;
+    }
+    return m_points;
 }
 
 Faces Scene::get_faces() const {
