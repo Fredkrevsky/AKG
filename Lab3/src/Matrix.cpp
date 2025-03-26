@@ -5,7 +5,7 @@
 #include <algorithm>
 
 
-Vector4D Vector4D::operator*(const TransformMatrix& matrix) const {
+Vector4 Vector4::operator*(const TransformMatrix& matrix) const {
     return {
         matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z + matrix[0][3] * w,
         matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z + matrix[1][3] * w,
@@ -14,11 +14,11 @@ Vector4D Vector4D::operator*(const TransformMatrix& matrix) const {
     };
 }
 
-double Vector4D::dot(const Vector4D& other) const {
+double Vector4::dot(const Vector4& other) const {
     return x * other.x + y * other.y + z * other.z;
 }
 
-Vector4D Vector4D::cross(const Vector4D& other) const {
+Vector4 Vector4::cross(const Vector4& other) const {
     return {
         y * other.z - z * other.y,
         z * other.x - x * other.z,
@@ -27,19 +27,19 @@ Vector4D Vector4D::cross(const Vector4D& other) const {
     };
 }
 
-Vector4D Vector4D::operator+(const Vector4D& other) const {
+Vector4 Vector4::operator+(const Vector4& other) const {
     return {x + other.x, y + other.y, z + other.z, w + other.w};
 }
 
-Vector4D Vector4D::operator-(const Vector4D& other) const {
+Vector4 Vector4::operator-(const Vector4& other) const {
     return {x - other.x, y - other.y, z - other.z, w - other.w};
 }
 
-Vector4D Vector4D::operator*(double scalar) const {
+Vector4 Vector4::operator*(double scalar) const {
     return {x * scalar, y * scalar, z * scalar, w * scalar};
 }
 
-Vector4D& Vector4D::operator+=(const Vector4D& other) {
+Vector4& Vector4::operator+=(const Vector4& other) {
     x += other.x;
     y += other.y;
     z += other.z;
@@ -47,7 +47,7 @@ Vector4D& Vector4D::operator+=(const Vector4D& other) {
     return *this;
 }
 
-Vector4D &Vector4D::operator-=(const Vector4D &other) {
+Vector4 &Vector4::operator-=(const Vector4 &other) {
     x -= other.x;
     y -= other.y;
     z -= other.z;
@@ -55,7 +55,7 @@ Vector4D &Vector4D::operator-=(const Vector4D &other) {
     return *this;
 }
 
-Vector4D& Vector4D::operator*=(double scalar) {
+Vector4& Vector4::operator*=(double scalar) {
     x *= scalar;
     y *= scalar;
     z *= scalar;
@@ -63,7 +63,7 @@ Vector4D& Vector4D::operator*=(double scalar) {
     return *this;
 }
 
-Vector4D& Vector4D::operator*=(const TransformMatrix& matrix) {
+Vector4& Vector4::operator*=(const TransformMatrix& matrix) {
     double new_x = matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z + matrix[0][3] * w;
     double new_y = matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z + matrix[1][3] * w;
     double new_z = matrix[2][0] * x + matrix[2][1] * y + matrix[2][2] * z + matrix[2][3] * w;
@@ -77,7 +77,7 @@ Vector4D& Vector4D::operator*=(const TransformMatrix& matrix) {
     return *this;
 }
 
-Vector4D& Vector4D::normalize() {
+Vector4& Vector4::normalize() {
     double length = std::sqrt(x * x + y * y + z * z);
     if (length > 1e-6) { 
         x /= length;
@@ -91,8 +91,8 @@ Vector4D& Vector4D::normalize() {
 }
 
 
-Vector4D operator*(const TransformMatrix& matrix, const Vector4D& point) {
-    Vector4D result{
+Vector4 operator*(const TransformMatrix& matrix, const Vector4& point) {
+    Vector4 result{
         matrix[0][0] * point.x + matrix[0][1] * point.y + matrix[0][2] * point.z + matrix[0][3] * point.w,
         matrix[1][0] * point.x + matrix[1][1] * point.y + matrix[1][2] * point.z + matrix[1][3] * point.w,
         matrix[2][0] * point.x + matrix[2][1] * point.y + matrix[2][2] * point.z + matrix[2][3] * point.w,
@@ -146,7 +146,7 @@ static TransformMatrix create_rotation_matrix_z(double angle) {
     }};
 }
 
-TransformMatrix create_rotation_matrix(const Vector4D& angles) {
+TransformMatrix create_rotation_matrix(const Vector4& angles) {
     TransformMatrix result = {{
         {1, 0, 0, 0}, 
         {0, 1, 0, 0},
@@ -167,7 +167,7 @@ TransformMatrix create_rotation_matrix(const Vector4D& angles) {
     return result;
 }
 
-TransformMatrix create_move_matrix(const Vector4D& translation) {
+TransformMatrix create_move_matrix(const Vector4& translation) {
     return {{
         {1, 0, 0, translation.x},
         {0, 1, 0, translation.y},

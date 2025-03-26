@@ -2,29 +2,26 @@
 #include "Matrix.hpp"
 #include <vector>
 
-enum class MoveDirection {
-    FORWARD,
-    BACK,
-    LEFT,
-    RIGHT
-};
+
 
 class Camera final {
 public:
+    enum class MoveDirection {
+        FORWARD,
+        BACK,
+        LEFT,
+        RIGHT
+    };
+    
     Camera() noexcept = default;
     
     void move(MoveDirection direction);
     void rotate(double angle_x, double angle_y);
     void scale(bool is_getting_closer);
     
-    TransformMatrix get_projection_matrix() const;
-    TransformMatrix get_view_matrix() const;
-    TransformMatrix get_scale_matrix() const;
-    TransformMatrix get_viewport_matrix() const;
-
-    Vector4D get_eye() const;
-    Vector4D get_target() const;
-    Vector4D get_up() const;
+    Vector4 get_eye() const;
+    Vector4 get_target() const;
+    Vector4 get_up() const;
     double get_scale() const;
     
 private:
@@ -33,16 +30,9 @@ private:
     constexpr static double MIN_SCALE_FACTOR{0.2};
     constexpr static double MAX_SCALE_FACTOR{5.0};
     constexpr static double camera_speed{0.05};
-    constexpr static double width{1600.0};
-    constexpr static double height{900.0};
-    constexpr static double fov = PI / 2.0;
-    constexpr static double znear = 0.01; 
-    constexpr static double zfar = 100.0; 
-    constexpr static double aspect = width / height; 
     
-    Vector4D eye{5.0, 5.0, 5.0, 1};
-    Vector4D target{5.0, 5.0, 0, 1};
-    Vector4D up{0, 1, 0, 1};
-
+    Vector4 eye{5.0, 5.0, 5.0, 1};
+    Vector4 target{5.0, 5.0, 0, 1};
+    Vector4 up{0, 1, 0, 1};
     double scale_factor{1.0};
 };

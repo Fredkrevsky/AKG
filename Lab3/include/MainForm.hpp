@@ -4,7 +4,7 @@
 #include "FPSCounter.hpp"
 #include "Logger.hpp"
 #include "Scene.hpp"
-#include "Bitmap.hpp"
+#include "Renderer.hpp"
 
 
 class MainForm final {
@@ -27,7 +27,7 @@ private:
 
     sf::RenderWindow m_window;
     sf::Texture m_texture;
-    Bitmap m_bitmap;
+    Renderer m_renderer;
     Scene m_scene;
     Logger m_logger;
     

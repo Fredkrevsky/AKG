@@ -24,7 +24,7 @@ add_executable(
     src/Logger.cpp
     src/Model.cpp
     src/Scene.cpp
-    src/Bitmap.cpp
+    src/Renderer.cpp
     src/Color.cpp
 )
 

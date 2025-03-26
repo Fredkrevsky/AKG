@@ -4,8 +4,8 @@
 #include <vector>
 
 struct Point {
-    Vector4D vertex;
-    Vector4D normal;
+    Vector4 vertex;
+    Vector4 normal;
     Color::RGBA color;
 };
 

@@ -9,7 +9,6 @@ using namespace std::string_literals;
 
 MainForm::MainForm() noexcept
     : m_window(sf::VideoMode(width, height), "Lab №1")
-    , m_bitmap(width, height)
     , m_camera(std::make_shared<Camera>())
     , m_counter(std::make_shared<FPSCounter>())
     , m_needs_update(true)
@@ -18,6 +17,7 @@ MainForm::MainForm() noexcept
     m_window.setFramerateLimit(144);
     m_texture.create(width, height);
     m_scene.set_camera(m_camera);
+    m_renderer.set_camera(m_camera);
     m_logger.set_camera(m_camera);
     m_logger.set_fps_counter(m_counter);
 }
@@ -77,8 +77,8 @@ void MainForm::draw() {
     if (m_needs_update){
         auto points = m_scene.get_points();
         auto faces = m_scene.get_faces();    
-        m_bitmap.draw(points, faces);
-        m_texture.update(m_bitmap.data());
+        m_renderer.draw(points, faces);
+        m_texture.update(m_renderer.data());
         m_needs_update = false;
     }
 
@@ -113,20 +113,20 @@ void MainForm::handle_keyboard_movement() {
     constexpr double rotation_angle = 0.1;
     constexpr double move_distance = 0.1;
 
-    constexpr static std::array<std::pair<sf::Keyboard::Key, MoveDirection>, 4> camera_movement_keys = {{
-        {sf::Keyboard::W, MoveDirection::FORWARD},
-        {sf::Keyboard::S, MoveDirection::BACK},
-        {sf::Keyboard::A, MoveDirection::LEFT},
-        {sf::Keyboard::D, MoveDirection::RIGHT}
+    constexpr static std::array<std::pair<sf::Keyboard::Key, Camera::MoveDirection>, 4> camera_movement_keys = {{
+        {sf::Keyboard::W, Camera::MoveDirection::FORWARD},
+        {sf::Keyboard::S, Camera::MoveDirection::BACK},
+        {sf::Keyboard::A, Camera::MoveDirection::LEFT},
+        {sf::Keyboard::D, Camera::MoveDirection::RIGHT}
     }};
 
-    constexpr static std::array<std::pair<sf::Keyboard::Key, Vector4D>, 3> model_rotation_keys = {{
+    constexpr static std::array<std::pair<sf::Keyboard::Key, Vector4>, 3> model_rotation_keys = {{
         {sf::Keyboard::Num1, {rotation_angle, 0, 0}},
         {sf::Keyboard::Num2, {0, rotation_angle, 0}},
         {sf::Keyboard::Num3, {0, 0, rotation_angle}}
     }};
 
-    constexpr static std::array<std::pair<sf::Keyboard::Key, Vector4D>, 6> model_move_keys = {{
+    constexpr static std::array<std::pair<sf::Keyboard::Key, Vector4>, 6> model_move_keys = {{
         {sf::Keyboard::Numpad1, {move_distance, 0, 0}},
         {sf::Keyboard::Numpad2, {-move_distance, 0, 0}},
         {sf::Keyboard::Numpad3, {0, move_distance, 0}},

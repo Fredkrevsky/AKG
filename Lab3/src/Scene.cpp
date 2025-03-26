@@ -24,7 +24,7 @@ bool Scene::initialize() {
                      std::move(normals));
 
     m_points = m_model.get_points();
-    m_is_changed = true;
+    invalidate_points();
     return true;
 }
 
@@ -32,14 +32,14 @@ void Scene::set_camera(std::shared_ptr<Camera> camera) {
     m_camera = camera;
 }
 
-void Scene::rotate_model(const Vector4D &rotate_vector) {
+void Scene::rotate_model(const Vector4 &rotate_vector) {
     m_model_rotation += rotate_vector;
-    m_is_changed = true;
+    invalidate_points();
 }
 
-void Scene::move_model(const Vector4D &move_vector) {
+void Scene::move_model(const Vector4 &move_vector) {
     m_model_position += move_vector;
-    m_is_changed = true;
+    invalidate_points();
 }
 
 void Scene::invalidate_points(){
@@ -52,46 +52,16 @@ Points Scene::get_points() {
     auto cached_matrix = move_matrix * rotation_matrix;
 
     auto fill_vertices_color = [&](Points& points) {
-        auto eye = m_camera->get_eye();
-
         std::ranges::for_each(points, [&](Point& point){
             auto& [vertex, normal, color] = point;
             vertex *= cached_matrix;
-            Vector4D new_normal = normal;
-            new_normal *= rotation_matrix;
-            new_normal.normalize();
-    
-            Vector4D sun = (eye - vertex).normalize();
-            double intensity = new_normal.dot(sun);
-            color = Color::from_intensity(intensity);
-        });
-    };
-
-    auto transform_vertices = [&](Points& points) {
-        auto view_matrix = m_camera->get_view_matrix();
-        auto viewport_matrix = m_camera->get_viewport_matrix();
-        auto scale_matrix = m_camera->get_scale_matrix();
-        auto projection_matrix = m_camera->get_projection_matrix();
-        auto cached_matrix = projection_matrix * view_matrix * scale_matrix;
-    
-        std::ranges::for_each(points, [&](Point& point) {
-            auto& [vertex, normal, color] = point;
-            vertex *= cached_matrix;
-            if (vertex.z < -vertex.w || vertex.z > vertex.w) {
-                vertex.w = 0;
-                return;
-            }
-            if (vertex.w != 0) {
-                vertex *= 1 / vertex.w;
-            }
-            vertex *= viewport_matrix;
+            normal *= cached_matrix;
         });
     };
 
     if (m_is_changed){
         m_points = m_model.get_points();
         fill_vertices_color(m_points);
-        transform_vertices(m_points);
         m_is_changed = false;
     }
     return m_points;

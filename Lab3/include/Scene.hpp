@@ -9,8 +9,8 @@ public:
 
     [[nodiscard]] bool initialize();
     void set_camera(std::shared_ptr<Camera> camera);
-    void rotate_model(const Vector4D& rotate_vector);
-    void move_model(const Vector4D& move_vector);
+    void rotate_model(const Vector4& rotate_vector);
+    void move_model(const Vector4& move_vector);
     void invalidate_points();
 
     Points get_points();
@@ -20,7 +20,7 @@ private:
     constexpr static auto MODEL_FILE_PATH = "../models/logan.obj";
 
     Model m_model;
-    Vector4D m_model_position, m_model_rotation;
+    Vector4 m_model_position, m_model_rotation;
     Points m_points;
     Faces m_faces;
 

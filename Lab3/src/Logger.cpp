@@ -26,9 +26,9 @@ void Logger::draw(sf::RenderWindow& window) {
 
 void Logger::update() {
     double fps = m_counter->get_fps();
-    Vector4D eye = m_camera->get_eye();
-    Vector4D target = m_camera->get_target();
-    Vector4D up = m_camera->get_up();
+    Vector4 eye = m_camera->get_eye();
+    Vector4 target = m_camera->get_target();
+    Vector4 up = m_camera->get_up();
     double scale = m_camera->get_scale();
 
     std::string text_str = std::format(
