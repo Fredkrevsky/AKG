@@ -2,6 +2,7 @@
 #include "Matrix.hpp"
 #include "Point.hpp"
 #include "Camera.hpp"
+#include "Raster.hpp"
 #include <memory>
 
 class Renderer final {
@@ -32,6 +33,7 @@ private:
     constexpr static double zfar = 100.0; 
     constexpr static double aspect = static_cast<double>(width) / height; 
 
+    Raster m_raster;
     std::shared_ptr<Camera> m_camera;
     std::vector<uint32_t> m_data; 
     std::vector<double> m_z_buffer;

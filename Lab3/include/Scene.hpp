@@ -8,12 +8,11 @@ public:
     Scene() noexcept = default;
 
     [[nodiscard]] bool initialize();
-    void set_camera(std::shared_ptr<Camera> camera);
     void rotate_model(const Vector4& rotate_vector);
     void move_model(const Vector4& move_vector);
-    void invalidate_points();
+    void update_points();
 
-    Points get_points();
+    Points get_points() const;
     Faces get_faces() const;
 
 private:
@@ -23,7 +22,4 @@ private:
     Vector4 m_model_position, m_model_rotation;
     Points m_points;
     Faces m_faces;
-
-    std::shared_ptr<Camera> m_camera;
-    bool m_is_changed{false};
 };

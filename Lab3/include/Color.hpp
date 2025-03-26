@@ -1,9 +1,11 @@
 #pragma once
 #include <cstdint>
+#include <algorithm>
+#include <cmath>
 
 namespace Color {
 
-    using RGBA = uint32_t; 
+    using RGBA = uint32_t;
 
     namespace Basic {
         constexpr RGBA Black       = 0xFF000000;
@@ -16,5 +18,7 @@ namespace Color {
 
     RGBA from_gray(uint8_t gray);
     uint8_t to_gray(RGBA color);
-    RGBA from_intensity(double intensity) ;
+    RGBA from_intensity(double intensity);
+    RGBA add(RGBA c1, RGBA c2);
+    RGBA multiply(RGBA color, double factor);
 }

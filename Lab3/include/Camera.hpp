@@ -3,7 +3,6 @@
 #include <vector>
 
 
-
 class Camera final {
 public:
     enum class MoveDirection {
@@ -12,7 +11,7 @@ public:
         LEFT,
         RIGHT
     };
-    
+
     Camera() noexcept = default;
     
     void move(MoveDirection direction);

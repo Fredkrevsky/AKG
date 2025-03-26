@@ -8,8 +8,7 @@ void Model::set_data(Vertices &&vertices, Faces&& faces, Normals&& normals) {
     for (auto&& [vertex, normal] : points_zip){
         m_points.emplace_back(Point{
             std::move(vertex), 
-            std::move(normal), 
-            Color::Basic::White
+            std::move(normal) 
         });
     }
     m_faces = faces;

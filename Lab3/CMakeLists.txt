@@ -26,6 +26,7 @@ add_executable(
     src/Scene.cpp
     src/Renderer.cpp
     src/Color.cpp
+    src/Raster.cpp
 )
 
 target_include_directories(

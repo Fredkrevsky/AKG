@@ -3,12 +3,11 @@
 #include <memory>
 #include <format>
 #include <map>
-#include <iostream>
 
 using namespace std::string_literals;
 
 MainForm::MainForm() noexcept
-    : m_window(sf::VideoMode(width, height), "Lab №1")
+    : m_window(sf::VideoMode(width, height), "Lab 3")
     , m_camera(std::make_shared<Camera>())
     , m_counter(std::make_shared<FPSCounter>())
     , m_needs_update(true)
@@ -16,7 +15,6 @@ MainForm::MainForm() noexcept
     m_window.setMouseCursorVisible(false);
     m_window.setFramerateLimit(144);
     m_texture.create(width, height);
-    m_scene.set_camera(m_camera);
     m_renderer.set_camera(m_camera);
     m_logger.set_camera(m_camera);
     m_logger.set_fps_counter(m_counter);
@@ -76,7 +74,7 @@ void MainForm::draw() {
 
     if (m_needs_update){
         auto points = m_scene.get_points();
-        auto faces = m_scene.get_faces();    
+        auto faces = m_scene.get_faces();  
         m_renderer.draw(points, faces);
         m_texture.update(m_renderer.data());
         m_needs_update = false;
@@ -102,7 +100,6 @@ void MainForm::handle_mouse_rotation() {
         double angle_y = delta_y * sensitivity;
 
         m_camera->rotate(angle_x, angle_y);
-        m_scene.invalidate_points();
         m_needs_update = true;
 
         sf::Mouse::setPosition(center, m_window);
@@ -139,7 +136,7 @@ void MainForm::handle_keyboard_movement() {
         const auto& [key, direction] = element;
         if (sf::Keyboard::isKeyPressed(key)) {
             m_camera->move(direction);
-            m_scene.invalidate_points();
+            m_scene.update_points();
             m_needs_update = true;
         }
     });
