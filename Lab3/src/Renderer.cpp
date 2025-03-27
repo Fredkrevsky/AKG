@@ -21,24 +21,24 @@ void Renderer::set_camera(std::shared_ptr<Camera> camera){
 }
 
 void Renderer::draw_triangle(Point p1, Point p2, Point p3) {
-    auto& [v1, n1] = p1;
-    auto& [v2, n2] = p2;
-    auto& [v3, n3] = p3;
+    auto& [w1, s1, n1] = p1;
+    auto& [w2, s2, n2] = p2;
+    auto& [w3, s3, n3] = p3;
 
-    if (v1.y > v2.y) std::swap(p1, p2);
-    if (v1.y > v3.y) std::swap(p1, p3);
-    if (v2.y > v3.y) std::swap(p2, p3);
+    if (s1.y > s2.y) std::swap(p1, p2);
+    if (s1.y > s3.y) std::swap(p1, p3);
+    if (s2.y > s3.y) std::swap(p2, p3);
 
-    const int x1 = static_cast<int>(v1.x);
-    const int y1 = static_cast<int>(v1.y);
-    const int x2 = static_cast<int>(v2.x);
-    const int y2 = static_cast<int>(v2.y);
-    const int x3 = static_cast<int>(v3.x);
-    const int y3 = static_cast<int>(v3.y);
+    const int x1 = static_cast<int>(s1.x);
+    const int y1 = static_cast<int>(s1.y);
+    const int x2 = static_cast<int>(s2.x);
+    const int y2 = static_cast<int>(s2.y);
+    const int x3 = static_cast<int>(s3.x);
+    const int y3 = static_cast<int>(s3.y);
 
-    const double z1 = v1.z;
-    const double z2 = v2.z;
-    const double z3 = v3.z;
+    const double z1 = s1.z;
+    const double z2 = s2.z;
+    const double z3 = s3.z;
 
     const int total_height = y3 - y1;
     if (total_height == 0) return;
@@ -55,35 +55,37 @@ void Renderer::draw_triangle(Point p1, Point p2, Point p3) {
 
         int Ax = x1 + (x3 - x1) * alpha;
         int Ay = y1 + i;
-        double Az = z1 + (z3 - z1) * alpha;
-        double Anx = n1.x + (n3.x - n1.x) * alpha;
-        double Any = n1.y + (n3.y - n1.y) * alpha;
-        double Anz = n1.z + (n3.z - n1.z) * alpha;
+        double Az = z1 + (z3 - z1) * alpha;    
+        
+        Vertex A = w1 + (w3 - w1) * alpha;
+        Normal An = n1 + (n3 - n1) * alpha;
 
         int Bx, By;
-        double Bz, Bnx, Bny, Bnz;
+        double Bz; 
+        Vertex B;
+        Normal Bn;
+
         if (second_half) {
             Bx = x2 + (x3 - x2) * beta;
             By = y2 + (i - (y2 - y1));
             Bz = z2 + (z3 - z2) * beta;
-            Bnx = n2.x + (n3.x - n2.x) * beta;
-            Bny = n2.y + (n3.y - n2.y) * beta;
-            Bnz = n2.z + (n3.z - n2.z) * beta;
+
+            B = w2 + (w3 - w2) * beta;
+            Bn = n2 + (n3 - n2) * beta;
         } else {
             Bx = x1 + (x2 - x1) * beta;
             By = y1 + i;
             Bz = z1 + (z2 - z1) * beta;
-            Bnx = n1.x + (n2.x - n1.x) * beta;
-            Bny = n1.y + (n2.y - n1.y) * beta;
-            Bnz = n1.z + (n2.z - n1.z) * beta;
+
+            B = w1 + (w2 - w1) * beta;
+            Bn = n1 + (n2 - n1) * beta;
         }
 
         if (Ax > Bx) {
             std::swap(Ax, Bx);
             std::swap(Az, Bz);
-            std::swap(Anx, Bnx);
-            std::swap(Any, Bny);
-            std::swap(Anz, Bnz);
+            std::swap(A, B);
+            std::swap(An, Bn);
         }
 
         int min_x = std::max(Ax, 0);
@@ -94,13 +96,11 @@ void Renderer::draw_triangle(Point p1, Point p2, Point p3) {
             double t = (x - Ax) / static_cast<double>(Bx - Ax);
             double z = Az + (Bz - Az) * t;
             if (z < m_z_buffer[index + x]) {
-                double nx = Anx + (Bnx - Anx) * t;
-                double ny = Any + (Bny - Any) * t;
-                double nz = Anz + (Bnz - Anz) * t;
 
-                Point point{
+                Point point{ 
+                    Vertex{A + (B - A) * t},
                     Vertex{x, Ay, z, 1.0},
-                    Normal{nx, ny, nz, 1.0}
+                    Normal{An + (Bn - An) * t}
                 };
 
                 Color::RGBA color = m_raster.get_color(point);
@@ -112,21 +112,27 @@ void Renderer::draw_triangle(Point p1, Point p2, Point p3) {
 }
 
 void Renderer::draw(const Points& points, const Faces& faces) {
+
+    static Vector4 sun{5.0, 5.0, 5.0, 1.0};
+
     const Vector4 eye = m_camera->get_eye();
     m_raster.set_eye(eye);
-    m_raster.set_sun(eye);
+    m_raster.set_sun(sun);
 
     clear();
-    Points transformed_points = transform_points(points);
-    std::ranges::for_each(faces, [&](const Face& face) {
-        const auto& p1 = transformed_points[face[0]];
-        const auto& p2 = transformed_points[face[1]];
-        const auto& p3 = transformed_points[face[2]];
-        const auto& [v1, n1] = p1;
-        const auto& [v2, n2] = p2;
-        const auto& [v3, n3] = p3;
 
-        if (v1.w > 0 && v2.w > 0 && v3.w > 0) {
+    Points projected_points = points;       // Extra copying idk how to fix normally
+    project_points(projected_points);       // without napy kocTblJleu
+
+    std::ranges::for_each(faces, [&](const Face& face) {
+        const auto& p1 = projected_points[face[0]];
+        const auto& p2 = projected_points[face[1]];
+        const auto& p3 = projected_points[face[2]];
+        const auto& [w1, s1, n1] = p1;
+        const auto& [w2, s2, n2] = p2;
+        const auto& [w3, s3, n3] = p3;
+
+        if (s1.w > 0 && s2.w > 0 && s3.w > 0) {
             draw_triangle(p1, p2, p3);
         }
     });
@@ -154,7 +160,7 @@ TransformMatrix Renderer::get_projection_matrix() const {
     return {{
         {f / aspect, 0,  0,  0},
         {0, f,  0,  0},
-        {0, 0, (zfar + znear) / (znear - zfar), 2 * zfar * znear / (znear - zfar)},
+        {0, 0, zfar / (znear - zfar), zfar * znear / (znear - zfar)},
         {0, 0, -1,  0}
     }};
 }
@@ -178,25 +184,22 @@ TransformMatrix Renderer::get_scale_matrix() const {
     }}; 
 }
 
-Points Renderer::transform_points(const Points& points) const {
+void Renderer::project_points(Points& points) const {
     const auto view_matrix = get_view_matrix();
     const auto viewport_matrix = get_viewport_matrix();
     const auto scale_matrix = get_scale_matrix();
     const auto projection_matrix = get_projection_matrix();
-    auto cached_matrix = projection_matrix * view_matrix * scale_matrix;
+    auto cached_matrix = viewport_matrix * projection_matrix * view_matrix * scale_matrix;
 
-    Points transformed_points = points;
-    std::ranges::for_each(transformed_points, [&](Point& point) {
-        auto& [vertex, normal] = point;
-        vertex *= cached_matrix;
-        if (vertex.z < -vertex.w || vertex.z > vertex.w) {
-            vertex.w = 0;
-            return;
+    std::ranges::for_each(points, [&](Point& point) {
+        auto& [world, screen, normal] = point;
+        screen = cached_matrix * world;
+        if (screen.w != 0) {
+            screen *= 1 / screen.w;
         }
-        if (vertex.w != 0) {
-            vertex *= 1 / vertex.w;
+
+        if (screen.z < -1 || screen.z > 1) {
+            screen.w = 0;
         }
-        vertex *= viewport_matrix;
     });
-    return transformed_points;
 }

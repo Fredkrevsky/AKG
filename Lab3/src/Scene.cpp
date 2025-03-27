@@ -4,6 +4,7 @@
 #include <ranges>
 #include "Color.hpp"
 
+
 using namespace std::string_literals;
 
 bool Scene::initialize() {
@@ -48,8 +49,8 @@ void Scene::update_points() {
 
     m_points = m_model.get_points();
     std::ranges::for_each(m_points, [&](Point& point){
-        auto& [vertex, normal] = point;
-        vertex *= cached_matrix;
+        auto& [world, screen, normal] = point;
+        world *= cached_matrix;
         normal *= cached_matrix;
     });
 }

@@ -4,7 +4,8 @@
 #include <vector>
 
 struct Point {
-    Vector4 vertex;
+    Vector4 world;
+    Vector4 screen;
     Vector4 normal;
 };
 

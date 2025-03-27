@@ -22,15 +22,15 @@ private:
     TransformMatrix get_scale_matrix() const;
     TransformMatrix get_projection_matrix() const; 
 
-    Points transform_points(const Points& points) const;
+    void project_points(Points& points) const;
     void draw_triangle(Point p1, Point p2, Point p3);
 
 private:
     constexpr static int width{1600};
     constexpr static int height{900};
-    constexpr static double fov = PI / 2.0;
-    constexpr static double znear = 0.01; 
-    constexpr static double zfar = 100.0; 
+    constexpr static double fov = PI / 4.0;
+    constexpr static double znear = 0.4; 
+    constexpr static double zfar = 1000.0; 
     constexpr static double aspect = static_cast<double>(width) / height; 
 
     Raster m_raster;
