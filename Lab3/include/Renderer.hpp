@@ -13,7 +13,7 @@ public:
     void set_camera(std::shared_ptr<Camera> camera);
     const uint8_t* data() const;
     void clear();
-    void draw(const Points& points,
+    void draw(Points&& points,
               const Faces& faces);
 
 private:

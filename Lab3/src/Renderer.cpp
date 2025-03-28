@@ -69,14 +69,12 @@ void Renderer::draw_triangle(Point p1, Point p2, Point p3) {
             Bx = x2 + (x3 - x2) * beta;
             By = y2 + (i - (y2 - y1));
             Bz = z2 + (z3 - z2) * beta;
-
             B = w2 + (w3 - w2) * beta;
             Bn = n2 + (n3 - n2) * beta;
         } else {
             Bx = x1 + (x2 - x1) * beta;
             By = y1 + i;
             Bz = z1 + (z2 - z1) * beta;
-
             B = w1 + (w2 - w1) * beta;
             Bn = n1 + (n2 - n1) * beta;
         }
@@ -111,7 +109,7 @@ void Renderer::draw_triangle(Point p1, Point p2, Point p3) {
     }
 }
 
-void Renderer::draw(const Points& points, const Faces& faces) {
+void Renderer::draw(Points&& points, const Faces& faces) {
 
     static Vector4 sun{5.0, 5.0, 5.0, 1.0};
 
@@ -120,14 +118,12 @@ void Renderer::draw(const Points& points, const Faces& faces) {
     m_raster.set_sun(sun);
 
     clear();
-
-    Points projected_points = points;       // Extra copying idk how to fix normally
-    project_points(projected_points);       // without napy kocTblJleu
+    project_points(points);
 
     std::ranges::for_each(faces, [&](const Face& face) {
-        const auto& p1 = projected_points[face[0]];
-        const auto& p2 = projected_points[face[1]];
-        const auto& p3 = projected_points[face[2]];
+        const auto& p1 = points[face[0]];
+        const auto& p2 = points[face[1]];
+        const auto& p3 = points[face[2]];
         const auto& [w1, s1, n1] = p1;
         const auto& [w2, s2, n2] = p2;
         const auto& [w3, s3, n3] = p3;

@@ -14,10 +14,10 @@ public:
     Color::RGBA get_color(const Point& p);
 
 private:
-    constexpr static double a = 10.0;
+    constexpr static double a = 16.0;
     constexpr static double ka = 0.1;
-    constexpr static double kd = 0.4;
-    constexpr static double ks = 0.8;
+    constexpr static double kd = 0.9;
+    constexpr static double ks = 0.4;
     
     constexpr static Color::RGBA ia = Color::Basic::White;
     constexpr static Color::RGBA id = Color::Basic::White;

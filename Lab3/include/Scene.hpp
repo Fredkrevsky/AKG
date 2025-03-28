@@ -16,7 +16,7 @@ public:
     Faces get_faces() const;
 
 private:
-    constexpr static auto MODEL_FILE_PATH = "../models/logan.obj";
+    constexpr static auto MODEL_FILE_PATH = "../models/bmw.obj";
 
     Model m_model;
     Vector4 m_model_position, m_model_rotation;

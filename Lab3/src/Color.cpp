@@ -21,7 +21,7 @@ RGBA Color::from_intensity(double intensity) {
     return Color::from_gray(gray);
 }
 
-RGBA Color::add(RGBA c1, RGBA c2) {
+RGBA Color::merge(RGBA c1, RGBA c2) {
     uint8_t r = std::min(((c1 >> 16) & 0xFF) + ((c2 >> 16) & 0xFF), 255U);
     uint8_t g = std::min(((c1 >> 8) & 0xFF) + ((c2 >> 8) & 0xFF), 255U);
     uint8_t b = std::min((c1 & 0xFF) + (c2 & 0xFF), 255U);

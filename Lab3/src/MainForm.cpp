@@ -73,9 +73,9 @@ void MainForm::draw() {
     static sf::Sprite sprite{m_texture};
 
     if (m_needs_update){
-        auto points = m_scene.get_points();
-        auto faces = m_scene.get_faces();  
-        m_renderer.draw(points, faces);
+        auto&& points = m_scene.get_points();
+        auto&& faces = m_scene.get_faces();  
+        m_renderer.draw(std::move(points), std::move(faces));
         m_texture.update(m_renderer.data());
         m_needs_update = false;
     }
