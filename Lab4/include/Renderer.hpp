@@ -12,7 +12,7 @@ public:
 
     void set_camera(std::shared_ptr<Camera> camera);
     const uint8_t* data() const;
-    void clear();
+    void clear_bitmap();
     void draw(Points&& points,
               const Faces& faces);
 
@@ -28,13 +28,13 @@ private:
 private:
     constexpr static int width{1600};
     constexpr static int height{900};
-    constexpr static double fov = PI / 4.0;
-    constexpr static double znear = 0.4; 
-    constexpr static double zfar = 1000.0; 
-    constexpr static double aspect = static_cast<double>(width) / height; 
+    constexpr static float fov = PI / 4.0;
+    constexpr static float znear = 0.4; 
+    constexpr static float zfar = 1000.0; 
+    constexpr static float aspect = static_cast<float>(width) / height; 
 
     Raster m_raster;
     std::shared_ptr<Camera> m_camera;
     std::vector<uint32_t> m_data; 
-    std::vector<double> m_z_buffer;
+    std::vector<float> m_z_buffer;
 };

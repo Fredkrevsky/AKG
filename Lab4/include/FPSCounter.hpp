@@ -6,9 +6,9 @@ public:
     FPSCounter() noexcept = default;
 
     void update();
-    double get_fps() const;
+    float get_fps() const;
 
 private:
-    double m_fps;
+    float m_fps;
     sf::Clock m_clock;
 };

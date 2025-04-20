@@ -7,7 +7,7 @@ Renderer::Renderer() noexcept
     , m_z_buffer(width * height)
 {}
 
-void Renderer::clear(){
+void Renderer::clear_bitmap(){
     std::ranges::fill(m_data, 0);
     std::ranges::fill(m_z_buffer, 1.0);
 }
@@ -31,9 +31,9 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
     auto& [w2, s2, n2] = *points[1];
     auto& [w3, s3, n3] = *points[2];
 
-    const double z1 = s1.z;
-    const double z2 = s2.z;
-    const double z3 = s3.z;
+    const float z1 = s1.z;
+    const float z2 = s2.z;
+    const float z3 = s3.z;
 
     const int x1 = static_cast<int>(s1.x);
     const int y1 = static_cast<int>(s1.y);
@@ -52,18 +52,18 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
         int segment_height = second_half ? (y3 - y2) : (y2 - y1);
         if (segment_height == 0) continue;
 
-        double alpha = static_cast<double>(i) / total_height;
-        double beta = static_cast<double>(second_half ? (i - (y2 - y1)) : i) / segment_height;
+        float alpha = static_cast<float>(i) / total_height;
+        float beta = static_cast<float>(second_half ? (i - (y2 - y1)) : i) / segment_height;
 
         int Ax = x1 + (x3 - x1) * alpha;
         int Ay = y1 + i;
-        double Az = z1 + (z3 - z1) * alpha;    
+        float Az = z1 + (z3 - z1) * alpha;    
         
         Vertex A = w1 + (w3 - w1) * alpha;
         Normal An = n1 + (n3 - n1) * alpha;
 
         int Bx, By;
-        double Bz; 
+        float Bz; 
         Vertex B;
         Normal Bn;
 
@@ -93,13 +93,13 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
         int index = Ay * width;
 
         for (int x = min_x; x < max_x; ++x) {
-            double t = (x - Ax) / static_cast<double>(Bx - Ax);
-            double z = Az + (Bz - Az) * t;
+            float t = (x - Ax) / static_cast<float>(Bx - Ax);
+            float z = Az + (Bz - Az) * t;
             if (z < m_z_buffer[index + x]) {
 
                 Point point{ 
                     Vertex{A + (B - A) * t},
-                    Vertex{x, Ay, z, 1.0},
+                    Vertex{static_cast<float>(x), static_cast<float>(Ay), z, 1.0},
                     Normal{An + (Bn - An) * t}
                 };
 
@@ -119,7 +119,7 @@ void Renderer::draw(Points&& points, const Faces& faces) {
     m_raster.set_eye(eye);
     m_raster.set_sun(sun);
 
-    clear();
+    clear_bitmap();
     project_points(points);
 
     std::ranges::for_each(faces, [&](const Face& face) {
@@ -154,7 +154,7 @@ TransformMatrix Renderer::get_view_matrix() const {
 }
 
 TransformMatrix Renderer::get_projection_matrix() const {
-    constexpr double f = 1.0 / std::tan(fov * 0.5);
+    constexpr float f = 1.0 / std::tan(fov * 0.5);
     return {{
         {f / aspect, 0,  0,  0},
         {0, f,  0,  0},
@@ -173,7 +173,7 @@ TransformMatrix Renderer::get_viewport_matrix() const {
 }
 
 TransformMatrix Renderer::get_scale_matrix() const {
-    const double scale_factor = m_camera->get_scale();
+    const float scale_factor = m_camera->get_scale();
     return {{
         {scale_factor, 0, 0, 0},
         {0, scale_factor, 0, 0},

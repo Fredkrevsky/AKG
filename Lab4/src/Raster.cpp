@@ -20,16 +20,16 @@ Color::RGBA Raster::get_color(const Point& point) {
     
     Color::RGBA Ia = Color::multiply(ia, ka);
     
-    const double NL = N.dot(L);
+    const float NL = N.dot(L);
     if (NL <= 0.0){
         return Ia;
     }
-    double diffuse_coef = kd * NL;
+    float diffuse_coef = kd * NL;
     Color::RGBA Id = Color::multiply(id, diffuse_coef);
     
     Vector4 H = (L + V).normalize();
     Vector4 R = ((N * (2.0 * NL)) - L).normalize();
-    double specular_coef = ks * std::pow(std::max(0.0, N.dot(H)), a);
+    float specular_coef = ks * std::pow(std::max(0.0f, N.dot(H)), a);
     Color::RGBA Is = Color::multiply(is, specular_coef);
     
     return Color::add(Ia, Id, Is);

@@ -32,13 +32,13 @@ bool Scene::initialize() {
     return true;
 }
 
-void Scene::rotate_model(const Vector4 &rotate_vector) {
-    m_model_rotation += rotate_vector;
+void Scene::rotate_model(const Vector4 &rotate_vector, float delta_time) {
+    m_model_rotation += rotate_vector * delta_time;
     update_points();
 }
 
-void Scene::move_model(const Vector4 &move_vector) {
-    m_model_position += move_vector;
+void Scene::move_model(const Vector4 &move_vector, float delta_time) {
+    m_model_position += move_vector * delta_time;
     update_points();
 }
 
@@ -59,6 +59,6 @@ Points Scene::get_points() const {
     return m_points;
 }
 
-Faces Scene::get_faces() const {
+const Faces& Scene::get_faces() const {
     return m_faces;
 }

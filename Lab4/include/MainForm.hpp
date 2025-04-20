@@ -16,12 +16,12 @@ public:
 private:
     void on_key_press(sf::Keyboard::Key code);
     void handle_mouse_rotation();
-    void handle_keyboard_movement();
+    void handle_keyboard_movement(float delta_time);
     void draw();
     
 private:
-    constexpr static double sensitivity{0.1};
-    constexpr static double keyboard_sensitivity{0.1};
+    constexpr static float sensitivity{0.05};
+    constexpr static float keyboard_sensitivity{0.1};
     constexpr static int width{1600};
     constexpr static int height{900};
 

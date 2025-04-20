@@ -13,7 +13,7 @@ uint8_t Color::to_gray(RGBA color) {
     return static_cast<uint8_t>((r + g + b) / 3);
 }
 
-RGBA Color::from_intensity(double intensity) {
+RGBA Color::from_intensity(float intensity) {
     if (intensity <= 0.0) return Basic::Black;
     if (intensity >= 1.0) return Basic::White;
     
@@ -28,8 +28,8 @@ RGBA Color::merge(RGBA c1, RGBA c2) {
     return 0xFF000000 | (r << 16) | (g << 8) | b;
 }
 
-RGBA Color::multiply(RGBA color, double factor) {
-    factor = std::clamp(factor, 0.0, 1.0);
+RGBA Color::multiply(RGBA color, float factor) {
+    factor = std::clamp(factor, 0.0f, 1.0f);
     uint8_t r = static_cast<uint8_t>(std::lround(((color >> 16) & 0xFF) * factor));
     uint8_t g = static_cast<uint8_t>(std::lround(((color >> 8) & 0xFF) * factor));
     uint8_t b = static_cast<uint8_t>(std::lround((color & 0xFF) * factor));

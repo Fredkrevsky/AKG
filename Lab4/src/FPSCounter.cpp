@@ -6,7 +6,7 @@ using namespace std::string_literals;
 
 void FPSCounter::update() {
     static int frameCount{};
-    static double elapsedTime{};
+    static float elapsedTime{};
     
     frameCount++;
     elapsedTime += m_clock.restart().asSeconds();
@@ -18,6 +18,6 @@ void FPSCounter::update() {
     }
 }
 
-double FPSCounter::get_fps() const {
+float FPSCounter::get_fps() const {
     return m_fps;
 }

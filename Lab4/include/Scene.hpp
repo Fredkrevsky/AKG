@@ -8,12 +8,12 @@ public:
     Scene() noexcept = default;
 
     [[nodiscard]] bool initialize();
-    void rotate_model(const Vector4& rotate_vector);
-    void move_model(const Vector4& move_vector);
+    void rotate_model(const Vector4& rotate_vector, float delta_time);
+    void move_model(const Vector4& move_vector, float delta_time);
     void update_points();
 
     Points get_points() const;
-    Faces get_faces() const;
+    const Faces& get_faces() const;
 
 private:
     constexpr static auto MODEL_FILE_PATH = "../models/logan.obj";

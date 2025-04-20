@@ -19,18 +19,21 @@ namespace Color {
 
     RGBA from_gray(uint8_t gray);
     uint8_t to_gray(RGBA color);
-    RGBA from_intensity(double intensity);
+    RGBA from_intensity(float intensity);
     RGBA merge(RGBA c1, RGBA c2);
     
     template<typename ...Args>
-    requires (std::same_as<Args, RGBA> && ...)
-    RGBA add(RGBA c1, RGBA c2, Args ...ts){
-        if constexpr (sizeof...(ts) == 0){
-            return merge(c1, c2);
-        } else {
-            return add(merge(c1, c2), ts...);
-        }
-    }
+    RGBA add(RGBA c1, RGBA c2, Args ...ts);
+    
+    RGBA multiply(RGBA color, float factor);
+}
 
-    RGBA multiply(RGBA color, double factor);
+template<typename ...Args>
+requires (std::same_as<Args, Color::RGBA> && ...)
+Color::RGBA Color::add(Color::RGBA c1, Color::RGBA c2, Args ...ts){
+    if constexpr (sizeof...(ts) == 0){
+        return merge(c1, c2);
+    } else {
+        return add(merge(c1, c2), ts...);
+    }
 }
