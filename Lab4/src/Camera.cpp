@@ -2,11 +2,11 @@
 #include <algorithm>
 
 void Camera::move(MoveDirection direction, float distance) {
-    Vector4 forward = (target - eye).normalize();
-    Vector4 left = up.cross(forward).normalize();
+    glm::vec3 forward = glm::normalize(target - eye);
+    glm::vec3 left = glm::normalize(glm::cross(up, forward));
     
-    Vector4 forward_move_vector = forward * camera_speed * distance;
-    Vector4 left_move_vector = left * camera_speed * distance;
+    glm::vec3 forward_move_vector = forward * camera_speed * distance;
+    glm::vec3 left_move_vector = left * camera_speed * distance;
 
     switch (direction)
     {
@@ -38,9 +38,9 @@ void Camera::rotate(float delta_x, float delta_y) {
     };
 
     constexpr float max_pitch = radians(89.0);
-    constexpr static Vector4 world_up{0.0, 1.0, 0.0, 0.0};
+    constexpr static glm::vec3 world_up{0.0, 1.0, 0.0};
 
-    Vector4 forward = (target - eye).normalize();
+    glm::vec3 forward = glm::normalize(target - eye);
     float yaw = std::atan2(forward.z, forward.x);
     float pitch = std::asin(forward.y);
 
@@ -48,16 +48,14 @@ void Camera::rotate(float delta_x, float delta_y) {
     pitch += delta_y * rotation_sensitivity;
     pitch = std::clamp(pitch, -max_pitch, max_pitch);
 
-    forward = {
+    forward = glm::normalize(glm::vec3{
         std::cos(yaw) * std::cos(pitch),
         std::sin(pitch),
-        std::sin(yaw) * std::cos(pitch),
-        1.0
-    };
-    forward.normalize();
+        std::sin(yaw) * std::cos(pitch)
+    });
 
-    Vector4 right = world_up.cross(forward).normalize();
-    up = forward.cross(right).normalize();
+    glm::vec3 right = glm::normalize(glm::cross(world_up, forward));
+    up = glm::normalize(glm::cross(forward, right));
     target = eye + forward;
 }
 
@@ -73,15 +71,15 @@ void Camera::scale(bool is_getting_closer) {
     );
 }
 
-Vector4 Camera::get_eye() const {
+glm::vec3 Camera::get_eye() const {
     return eye;
 }
 
-Vector4 Camera::get_target() const {
+glm::vec3 Camera::get_target() const {
     return target;
 }
 
-Vector4 Camera::get_up() const {
+glm::vec3 Camera::get_up() const {
     return up;
 }
 

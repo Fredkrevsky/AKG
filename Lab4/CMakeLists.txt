@@ -12,6 +12,7 @@ find_package(
 )
 
 find_package(nlohmann_json REQUIRED)
+find_package(glm REQUIRED)
 
 add_executable(
     ${PROJECT_NAME} 
@@ -40,4 +41,5 @@ target_link_libraries(
     sfml-window 
     sfml-system
     nlohmann_json::nlohmann_json
+    glm::glm
 )

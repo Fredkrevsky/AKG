@@ -6,7 +6,7 @@ class Model final {
 public:
     Model() noexcept = default;
 
-    void set_data(Vertices&& vertices, Faces&& faces, Normals&& normals);
+    void set_data(Vertices&& vertices, Faces&& faces, Vertices&& Vertices);
 
     Points get_points() const;
     Faces get_faces() const;

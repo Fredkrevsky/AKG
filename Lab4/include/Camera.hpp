@@ -18,9 +18,9 @@ public:
     void rotate(float angle_x, float angle_y);
     void scale(bool is_getting_closer);
     
-    Vector4 get_eye() const;
-    Vector4 get_target() const;
-    Vector4 get_up() const;
+    glm::vec3 get_eye() const;
+    glm::vec3 get_target() const;
+    glm::vec3 get_up() const;
     float get_scale() const;
     
 private:
@@ -30,8 +30,8 @@ private:
     constexpr static float MAX_SCALE_FACTOR{5.0};
     constexpr static float camera_speed{1.0};
     
-    Vector4 eye{5.0, 5.0, 5.0, 1};
-    Vector4 target{0, 0, 0, 1};
-    Vector4 up{0, 1, 0, 1};
+    glm::vec3 eye{5.0, 5.0, 5.0};
+    glm::vec3 target{0, 0, 0};
+    glm::vec3 up{0, 1, 0};
     float scale_factor{1.0};
 };

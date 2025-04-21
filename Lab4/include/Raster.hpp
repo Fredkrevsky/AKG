@@ -8,8 +8,8 @@ public:
     Raster() noexcept = default;
     ~Raster() = default;
 
-    void set_eye(const Vector4& eye);
-    void set_sun(const Vector4& sun);
+    void set_eye(const glm::vec3& eye);
+    void set_sun(const glm::vec3& sun);
     
     Color::RGBA get_color(const Point& p);
 
@@ -23,5 +23,5 @@ private:
     constexpr static Color::RGBA id = Color::Basic::Red;
     constexpr static Color::RGBA is = Color::Basic::Blue;
 
-    Vector4 m_eye, m_sun;
+    glm::vec3 m_eye, m_sun;
 };

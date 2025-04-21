@@ -2,11 +2,12 @@
 #include "Matrix.hpp"
 #include "Color.hpp"
 #include <vector>
+#include <glm/vec4.hpp>
 
 struct Point {
-    Vector4 world;
-    Vector4 screen;
-    Vector4 normal;
+    glm::vec3 world; 
+    glm::vec3 screen;
+    glm::vec3 normal;
 };
 
 using Points = std::vector<Point>;

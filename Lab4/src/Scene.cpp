@@ -32,12 +32,12 @@ bool Scene::initialize() {
     return true;
 }
 
-void Scene::rotate_model(const Vector4 &rotate_vector, float delta_time) {
+void Scene::rotate_model(const glm::vec4 &rotate_vector, float delta_time) {
     m_model_rotation += rotate_vector * delta_time;
     update_points();
 }
 
-void Scene::move_model(const Vector4 &move_vector, float delta_time) {
+void Scene::move_model(const glm::vec4 &move_vector, float delta_time) {
     m_model_position += move_vector * delta_time;
     update_points();
 }
@@ -50,8 +50,12 @@ void Scene::update_points() {
     m_points = m_model.get_points();
     std::ranges::for_each(m_points, [&](Point& point){
         auto& [world, screen, normal] = point;
-        world *= cached_matrix;
-        normal *= cached_matrix;
+        glm::vec4 world4 = {world.x, world.y, world.z, 1.0};
+        glm::vec4 normal4 = {normal.x, normal.y, normal.z, 1.0};
+        world4 = cached_matrix * world4;
+        normal4 = cached_matrix * normal4;
+        world = glm::vec3{world4.x, world4.y, world4.z};
+        normal = glm::vec3{normal4.x, normal4.y, normal4.z};
     });
 }
 

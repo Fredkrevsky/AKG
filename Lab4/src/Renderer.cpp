@@ -59,13 +59,13 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
         int Ay = y1 + i;
         float Az = z1 + (z3 - z1) * alpha;    
         
-        Vertex A = w1 + (w3 - w1) * alpha;
-        Normal An = n1 + (n3 - n1) * alpha;
+        glm::vec3 A = w1 + (w3 - w1) * alpha;
+        glm::vec3 An = n1 + (n3 - n1) * alpha;
 
         int Bx, By;
         float Bz; 
-        Vertex B;
-        Normal Bn;
+        glm::vec3 B;
+        glm::vec3 Bn;
 
         if (second_half) {
             Bx = x2 + (x3 - x2) * beta;
@@ -98,9 +98,9 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
             if (z < m_z_buffer[index + x]) {
 
                 Point point{ 
-                    Vertex{A + (B - A) * t},
-                    Vertex{static_cast<float>(x), static_cast<float>(Ay), z, 1.0},
-                    Normal{An + (Bn - An) * t}
+                    glm::vec3{A + (B - A) * t},
+                    glm::vec3{static_cast<float>(x), static_cast<float>(Ay), z},
+                    glm::vec3{An + (Bn - An) * t}
                 };
 
                 Color::RGBA color = m_raster.get_color(point);
@@ -113,14 +113,18 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
 
 void Renderer::draw(Points&& points, const Faces& faces) {
 
-    static Vector4 sun{5.0, 5.0, 5.0, 1.0};
+    static glm::vec3 sun{5.0, 5.0, 5.0};
 
-    const Vector4 eye = m_camera->get_eye();
+    const glm::vec3 eye = m_camera->get_eye();
     m_raster.set_eye(eye);
     m_raster.set_sun(sun);
 
     clear_bitmap();
     project_points(points);
+
+    auto check = [](const auto& vertex) -> bool {
+        return vertex.z >= -1 && vertex.z <= 1;
+    };
 
     std::ranges::for_each(faces, [&](const Face& face) {
         const auto& p1 = points[face[0]];
@@ -129,57 +133,57 @@ void Renderer::draw(Points&& points, const Faces& faces) {
         const auto& [w1, s1, n1] = p1;
         const auto& [w2, s2, n2] = p2;
         const auto& [w3, s3, n3] = p3;
-
-        if (s1.w > 0 && s2.w > 0 && s3.w > 0) {
+        
+        if (check(s1) && check(s2) && check(s3)) {
             draw_triangle(&p1, &p2, &p3);
         }
     });
 }
 
-TransformMatrix Renderer::get_view_matrix() const {
-    const Vector4 eye = m_camera->get_eye();
-    const Vector4 target = m_camera->get_target();
-    const Vector4 up = m_camera->get_up();
+glm::mat4x4 Renderer::get_view_matrix() const {
+    const glm::vec3 eye = m_camera->get_eye();
+    const glm::vec3 target = m_camera->get_target();
+    const glm::vec3 up = m_camera->get_up();
 
-    Vector4 ZAxis = (eye - target).normalize();
-    Vector4 XAxis = up.cross(ZAxis).normalize();
-    Vector4 YAxis = ZAxis.cross(XAxis).normalize();
+    glm::vec3 ZAxis = glm::normalize(eye - target);
+    glm::vec3 XAxis = glm::normalize(glm::cross(up, ZAxis));
+    glm::vec3 YAxis = glm::normalize(glm::cross(ZAxis, XAxis));
 
-    return {{
-        {XAxis.x, XAxis.y, XAxis.z, -XAxis.dot(eye)},
-        {YAxis.x, YAxis.y, YAxis.z, -YAxis.dot(eye)},
-        {ZAxis.x, ZAxis.y, ZAxis.z, -ZAxis.dot(eye)},
+    return glm::mat4x4{
+        {XAxis.x, XAxis.y, XAxis.z, glm::dot(-XAxis, eye)},
+        {YAxis.x, YAxis.y, YAxis.z, glm::dot(-YAxis, eye)},
+        {ZAxis.x, ZAxis.y, ZAxis.z, glm::dot(-ZAxis, eye)},
         {0, 0, 0, 1}
-    }};
+    };
 }
 
-TransformMatrix Renderer::get_projection_matrix() const {
+glm::mat4x4 Renderer::get_projection_matrix() const {
     constexpr float f = 1.0 / std::tan(fov * 0.5);
-    return {{
+    return glm::mat4x4{
         {f / aspect, 0,  0,  0},
         {0, f,  0,  0},
         {0, 0, zfar / (znear - zfar), zfar * znear / (znear - zfar)},
         {0, 0, -1,  0}
-    }};
+    };
 }
 
-TransformMatrix Renderer::get_viewport_matrix() const {
-    return {{
+glm::mat4x4 Renderer::get_viewport_matrix() const {
+    return glm::mat4x4{
         {width / 2, 0, 0, width / 2},
         {0, -height / 2, 0, height / 2},
         {0, 0, 1, 0},
         {0, 0, 0, 1}
-    }};
+    };
 }
 
-TransformMatrix Renderer::get_scale_matrix() const {
+glm::mat4x4 Renderer::get_scale_matrix() const {
     const float scale_factor = m_camera->get_scale();
-    return {{
+    return glm::mat4x4{
         {scale_factor, 0, 0, 0},
         {0, scale_factor, 0, 0},
         {0, 0, scale_factor, 0},
         {0, 0, 0, 1}
-    }}; 
+    }; 
 }
 
 void Renderer::project_points(Points& points) const {
@@ -187,17 +191,15 @@ void Renderer::project_points(Points& points) const {
     const auto viewport_matrix = get_viewport_matrix();
     const auto scale_matrix = get_scale_matrix();
     const auto projection_matrix = get_projection_matrix();
-    auto cached_matrix = viewport_matrix * projection_matrix * view_matrix * scale_matrix;
+    auto cached_matrix = glm::transpose(view_matrix * projection_matrix * viewport_matrix * scale_matrix);
 
     std::ranges::for_each(points, [&](Point& point) {
         auto& [world, screen, normal] = point;
-        screen = cached_matrix * world;
-        if (screen.w != 0) {
-            screen *= 1 / screen.w;
+        glm::vec4 world4 = {world.x, world.y, world.z, 1.0};
+        glm::vec4 screen4 = cached_matrix * world4;
+        if (screen4.w != 0) {
+            screen4 *= 1 / screen4.w;
         }
-
-        if (screen.z < -1 || screen.z > 1) {
-            screen.w = 0;
-        }
+        screen = {screen4.x, screen4.y, screen4.z};
     });
 }

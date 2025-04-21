@@ -3,7 +3,6 @@
 #include <string>
 #include <memory>
 
-
 class Parser {
 public:
     Parser() noexcept = default;
@@ -16,14 +15,13 @@ public:
     
     Vertices get_vertices() const;
     Faces get_faces() const;
-    Normals get_normals() const;
+    Vertices get_normals() const;
     
 protected:
     Vertices m_vertices;
     Faces m_faces;
-    Normals m_normals;
+    Vertices m_normals;
 };
-
 
 class ParserOBJ final : public Parser {
 public:

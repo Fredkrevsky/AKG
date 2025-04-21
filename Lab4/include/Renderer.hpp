@@ -17,10 +17,10 @@ public:
               const Faces& faces);
 
 private:
-    TransformMatrix get_view_matrix() const;
-    TransformMatrix get_viewport_matrix() const;
-    TransformMatrix get_scale_matrix() const;
-    TransformMatrix get_projection_matrix() const; 
+    glm::mat4x4 get_view_matrix() const;
+    glm::mat4x4 get_viewport_matrix() const;
+    glm::mat4x4 get_scale_matrix() const;
+    glm::mat4x4 get_projection_matrix() const; 
 
     void project_points(Points& points) const;
     void draw_triangle(const Point* p1, const Point* p2, const Point* p3);
@@ -35,6 +35,6 @@ private:
 
     Raster m_raster;
     std::shared_ptr<Camera> m_camera;
-    std::vector<uint32_t> m_data; 
+    std::vector<Color::RGBA> m_data; 
     std::vector<float> m_z_buffer;
 };
