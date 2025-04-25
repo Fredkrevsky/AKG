@@ -1,7 +1,6 @@
 #include "Renderer.hpp"
 #include <algorithm>
 
-
 Renderer::Renderer() noexcept
     : m_data(width * height)
     , m_z_buffer(width * height)
@@ -27,26 +26,42 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
         return a->screen.y < b->screen.y;
     });
 
-    auto& [w1, s1, n1] = *points[0];
-    auto& [w2, s2, n2] = *points[1];
-    auto& [w3, s3, n3] = *points[2];
+    auto& [w1, s1, n1, t1] = *points[0]; 
+    auto& [w2, s2, n2, t2] = *points[1]; 
+    auto& [w3, s3, n3, t3] = *points[2];  
 
+    const float inv_z1 = 1.0f / s1.z;
+    const float inv_z2 = 1.0f / s2.z;
+    const float inv_z3 = 1.0f / s3.z;
+
+    const glm::vec3 w1_persp = w1 * inv_z1;
+    const glm::vec3 w2_persp = w2 * inv_z2;
+    const glm::vec3 w3_persp = w3 * inv_z3;
+
+    const glm::vec3 n1_persp = n1 * inv_z1;
+    const glm::vec3 n2_persp = n2 * inv_z2;
+    const glm::vec3 n3_persp = n3 * inv_z3;
+
+    const glm::vec3 t1_persp = t1 * inv_z1;
+    const glm::vec3 t2_persp = t2 * inv_z2;
+    const glm::vec3 t3_persp = t3 * inv_z3;
+
+    const int x1 = static_cast<int>(std::round(s1.x));
+    const int y1 = static_cast<int>(std::round(s1.y));
+    const int x2 = static_cast<int>(std::round(s2.x));
+    const int y2 = static_cast<int>(std::round(s2.y));
+    const int x3 = static_cast<int>(std::round(s3.x));
+    const int y3 = static_cast<int>(std::round(s3.y));
     const float z1 = s1.z;
     const float z2 = s2.z;
     const float z3 = s3.z;
-
-    const int x1 = static_cast<int>(s1.x);
-    const int y1 = static_cast<int>(s1.y);
-    const int x2 = static_cast<int>(s2.x);
-    const int y2 = static_cast<int>(s2.y);
-    const int x3 = static_cast<int>(s3.x);
-    const int y3 = static_cast<int>(s3.y);
 
     const int total_height = y3 - y1;
     if (total_height == 0) return;
 
     int min_i = std::max(-y1, 0);
     int max_i = std::min(y3, height) - y1;
+    
     for (int i = min_i; i < max_i; ++i) {
         bool second_half = i > (y2 - y1) || y2 == y1;
         int segment_height = second_half ? (y3 - y2) : (y2 - y1);
@@ -55,37 +70,46 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
         float alpha = static_cast<float>(i) / total_height;
         float beta = static_cast<float>(second_half ? (i - (y2 - y1)) : i) / segment_height;
 
+        float inv_zA = inv_z1 + (inv_z3 - inv_z1) * alpha;
+        float inv_zB = second_half 
+            ? inv_z2 + (inv_z3 - inv_z2) * beta 
+            : inv_z1 + (inv_z2 - inv_z1) * beta;
+
+        glm::vec3 A_persp = w1_persp + (w3_persp - w1_persp) * alpha;
+        glm::vec3 An_persp = n1_persp + (n3_persp - n1_persp) * alpha;
+        glm::vec3 At_persp = t1_persp + (t3_persp - t1_persp) * alpha;
+
+        glm::vec3 B_persp = second_half
+            ? w2_persp + (w3_persp - w2_persp) * beta
+            : w1_persp + (w2_persp - w1_persp) * beta;
+        glm::vec3 Bn_persp = second_half
+            ? n2_persp + (n3_persp - n2_persp) * beta
+            : n1_persp + (n2_persp - n1_persp) * beta;
+        glm::vec3 Bt_persp = second_half
+            ? t2_persp + (t3_persp - t2_persp) * beta
+            : t1_persp + (t2_persp - t1_persp) * beta;
+
         int Ax = x1 + (x3 - x1) * alpha;
         int Ay = y1 + i;
-        float Az = z1 + (z3 - z1) * alpha;    
-        
-        glm::vec3 A = w1 + (w3 - w1) * alpha;
-        glm::vec3 An = n1 + (n3 - n1) * alpha;
+        float Az = z1 + (z3 - z1) * alpha;
 
-        int Bx, By;
-        float Bz; 
-        glm::vec3 B;
-        glm::vec3 Bn;
-
-        if (second_half) {
-            Bx = x2 + (x3 - x2) * beta;
-            By = y2 + (i - (y2 - y1));
-            Bz = z2 + (z3 - z2) * beta;
-            B = w2 + (w3 - w2) * beta;
-            Bn = n2 + (n3 - n2) * beta;
-        } else {
-            Bx = x1 + (x2 - x1) * beta;
-            By = y1 + i;
-            Bz = z1 + (z2 - z1) * beta;
-            B = w1 + (w2 - w1) * beta;
-            Bn = n1 + (n2 - n1) * beta;
-        }
+        int Bx = second_half 
+            ? x2 + (x3 - x2) * beta 
+            : x1 + (x2 - x1) * beta;
+        int By = second_half 
+            ? y2 + (i - (y2 - y1)) 
+            : y1 + i;
+        float Bz = second_half 
+            ? z2 + (z3 - z2) * beta 
+            : z1 + (z2 - z1) * beta;
 
         if (Ax > Bx) {
             std::swap(Ax, Bx);
             std::swap(Az, Bz);
-            std::swap(A, B);
-            std::swap(An, Bn);
+            std::swap(inv_zA, inv_zB);
+            std::swap(A_persp, B_persp);
+            std::swap(An_persp, Bn_persp);
+            std::swap(At_persp, Bt_persp);
         }
 
         int min_x = std::max(Ax, 0);
@@ -95,12 +119,19 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
         for (int x = min_x; x < max_x; ++x) {
             float t = (x - Ax) / static_cast<float>(Bx - Ax);
             float z = Az + (Bz - Az) * t;
+            
             if (z < m_z_buffer[index + x]) {
+                float inv_z = inv_zA + (inv_zB - inv_zA) * t;
+                
+                glm::vec3 world = (A_persp + (B_persp - A_persp) * t) / inv_z;
+                glm::vec3 normal = (An_persp + (Bn_persp - An_persp) * t) / inv_z;
+                glm::vec3 tex_coord = (At_persp + (Bt_persp - At_persp) * t) / inv_z;
 
                 Point point{ 
-                    glm::vec3{A + (B - A) * t},
+                    world,
                     glm::vec3{static_cast<float>(x), static_cast<float>(Ay), z},
-                    glm::vec3{An + (Bn - An) * t}
+                    normal,
+                    tex_coord 
                 };
 
                 Color::RGBA color = m_raster.get_color(point);
@@ -111,7 +142,7 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
     }
 }
 
-void Renderer::draw(Points&& points, const Faces& faces) {
+void Renderer::draw(Points&& points, const Faces& faces, const Vertices& normals, const Vertices& texture_vertices) {
 
     static glm::vec3 sun{5.0, 5.0, 5.0};
 
@@ -122,20 +153,27 @@ void Renderer::draw(Points&& points, const Faces& faces) {
     clear_bitmap();
     project_points(points);
 
-    auto check = [](const auto& vertex) -> bool {
-        return vertex.z >= -1 && vertex.z <= 1;
+    auto check = [](const Point& vertex) -> bool {
+        return vertex.screen.z >= -1 && vertex.screen.z <= 1;
     };
 
     std::ranges::for_each(faces, [&](const Face& face) {
-        const auto& p1 = points[face[0]];
-        const auto& p2 = points[face[1]];
-        const auto& p3 = points[face[2]];
-        const auto& [w1, s1, n1] = p1;
-        const auto& [w2, s2, n2] = p2;
-        const auto& [w3, s3, n3] = p3;
+        const auto& p1 = points[face[0][0]];
+        const auto& p2 = points[face[1][0]];
+        const auto& p3 = points[face[2][0]];
+        const auto& t1 = texture_vertices[face[0][1]];
+        const auto& t2 = texture_vertices[face[1][1]];
+        const auto& t3 = texture_vertices[face[2][1]];
+        const auto& n1 = normals[face[0][2]];
+        const auto& n2 = normals[face[1][2]];
+        const auto& n3 = normals[face[2][2]];
+
+        if (check(p1) && check(p2) && check(p3)) {
+            Point p41{p1.world, p1.screen, n1, t1};
+            Point p42{p2.world, p2.screen, n2, t2};
+            Point p43{p3.world, p3.screen, n3, t3};
         
-        if (check(s1) && check(s2) && check(s3)) {
-            draw_triangle(&p1, &p2, &p3);
+            draw_triangle(&p41, &p42, &p43);
         }
     });
 }
@@ -191,10 +229,10 @@ void Renderer::project_points(Points& points) const {
     const auto viewport_matrix = get_viewport_matrix();
     const auto scale_matrix = get_scale_matrix();
     const auto projection_matrix = get_projection_matrix();
-    auto cached_matrix = glm::transpose(view_matrix * projection_matrix * viewport_matrix * scale_matrix);
+    const auto cached_matrix = glm::transpose(view_matrix * projection_matrix * viewport_matrix * scale_matrix);
 
     std::ranges::for_each(points, [&](Point& point) {
-        auto& [world, screen, normal] = point;
+        auto& [world, screen, normal, texture] = point;
         glm::vec4 world4 = {world.x, world.y, world.z, 1.0};
         glm::vec4 screen4 = cached_matrix * world4;
         if (screen4.w != 0) {

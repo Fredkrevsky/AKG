@@ -2,10 +2,11 @@
 #include "Matrix.hpp"
 #include "Color.hpp"
 #include "Point.hpp"
+#include <string>
 
 class Raster final{
 public:
-    Raster() noexcept = default;
+    Raster() noexcept;
     ~Raster() = default;
 
     void set_eye(const glm::vec3& eye);
@@ -23,5 +24,12 @@ private:
     constexpr static Color::RGBA id = Color::Basic::Red;
     constexpr static Color::RGBA is = Color::Basic::Blue;
 
+    const std::string diffuse_path = "/home/fedar/Documents/BSUIR/AKG/models/sahur/diffuse.raw";
+    const std::string normal_path = "../models/sahur/texture_normal.png";
+
+    std::vector<std::vector<uint32_t>> arr_diffuse;
+    std::vector<std::vector<uint32_t>> arr_normal;
+
     glm::vec3 m_eye, m_sun;
 };
+

@@ -1,7 +1,7 @@
 #pragma once
-#include "Model.hpp"
 #include "Parser.hpp"
 #include "Camera.hpp"
+#include "Point.hpp"
 
 class Scene final {
 public:
@@ -14,13 +14,14 @@ public:
 
     Points get_points() const;
     const Faces& get_faces() const;
-    Points get_normals() const;
+    const Vertices& get_normals() const;
+    const Vertices& get_texture_vertices() const;
 
 private:
-    constexpr static auto MODEL_FILE_PATH = "../models/logan.obj";
+    constexpr static auto MODEL_FILE_PATH = "../models/sahur/model.obj";
 
-    Model m_model;
     glm::vec4 m_model_position, m_model_rotation;
     Points m_points;
     Faces m_faces;
+    Vertices m_normals, m_texture_vertices;
 };

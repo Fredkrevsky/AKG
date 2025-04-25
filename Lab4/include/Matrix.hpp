@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <glm/mat4x4.hpp>
 
-using Face = std::array<uint32_t, 3>;
+using Face = std::array<std::array<uint32_t, 3>, 3>;
 using Faces = std::vector<Face>;
 using Vertices = std::vector<glm::vec3>;
 

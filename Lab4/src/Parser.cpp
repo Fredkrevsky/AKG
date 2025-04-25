@@ -3,7 +3,6 @@
 #include <sstream>
 #include <nlohmann/json.hpp>
 
-
 using namespace std::string_literals;
 
 std::unique_ptr<Parser> Parser::create_parser(const std::string& format){
@@ -24,6 +23,10 @@ Faces Parser::get_faces() const {
 
 Vertices Parser::get_normals() const {
     return m_normals;
+}
+
+Vertices Parser::get_texture_vertices() const {
+    return m_texture_vertices;
 }
 
 std::string Parser::get_format(const std::string& path) {
@@ -56,10 +59,16 @@ void ParserOBJ::parse_file(const std::string& file_path) {
             for (int i = 0; i < 3; ++i) {
                 std::string vertex_data;
                 iss >> vertex_data;
-                std::istringstream vertex_stream(vertex_data);
-                std::string vertex_index_str;
-                std::getline(vertex_stream, vertex_index_str, '/');
-                face[i] = std::stoi(vertex_index_str) - 1;
+                size_t pos1 = vertex_data.find('/');
+                size_t pos2 = vertex_data.find('/', pos1 + 1);
+
+                int a = std::stoi(vertex_data.substr(0, pos1));
+                int b = std::stoi(vertex_data.substr(pos1 + 1, pos2 - pos1 - 1));
+                int c = std::stoi(vertex_data.substr(pos2 + 1));
+
+                face[i][0] = a - 1;
+                face[i][1] = b - 1;
+                face[i][2] = c - 1;
             }
             m_faces.push_back(face);
         }
@@ -67,6 +76,11 @@ void ParserOBJ::parse_file(const std::string& file_path) {
             glm::vec3 normal{0, 0, 0};
             iss >> normal.x >> normal.y >> normal.z;
             m_normals.push_back(normal);
+        }
+        else if (type == "vt") {
+            glm::vec3 texture_vertex{0, 0, 0};
+            iss >> texture_vertex.x >> texture_vertex.y;
+            m_texture_vertices.push_back(texture_vertex);
         }
     }
 }

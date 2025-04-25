@@ -79,7 +79,9 @@ void MainForm::draw() {
     if (m_needs_update) {
         auto&& points = m_scene.get_points();
         const auto& faces = m_scene.get_faces();
-        m_renderer.draw(std::move(points), faces);
+        const auto& normals = m_scene.get_normals();
+        const auto& texture_vertices = m_scene.get_texture_vertices();
+        m_renderer.draw(std::move(points), faces, normals, texture_vertices);
         m_texture.update(m_renderer.data());
         m_needs_update = false;
     }

@@ -8,6 +8,7 @@ struct Point {
     glm::vec3 world; 
     glm::vec3 screen;
     glm::vec3 normal;
+    glm::vec3 texture;
 };
 
 using Points = std::vector<Point>;

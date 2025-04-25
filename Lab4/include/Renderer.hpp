@@ -14,7 +14,9 @@ public:
     const uint8_t* data() const;
     void clear_bitmap();
     void draw(Points&& points,
-              const Faces& faces);
+              const Faces& faces,
+              const Vertices& normals, 
+              const Vertices& texture_vertices);
 
 private:
     glm::mat4x4 get_view_matrix() const;

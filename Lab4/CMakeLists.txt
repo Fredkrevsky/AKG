@@ -23,7 +23,6 @@ add_executable(
     src/FPSCounter.cpp
     src/Camera.cpp
     src/Logger.cpp
-    src/Model.cpp
     src/Scene.cpp
     src/Renderer.cpp
     src/Color.cpp
