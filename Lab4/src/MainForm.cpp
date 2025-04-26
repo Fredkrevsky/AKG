@@ -27,6 +27,7 @@ void MainForm::run_main_loop() {
     }
 
     sf::Clock frame_clock;
+    bool flag = true;
     sf::Mouse::setPosition(center, m_window);
 
     while (m_window.isOpen()) {
@@ -65,11 +66,13 @@ void MainForm::run_main_loop() {
             }
         }
 
-        if (m_window.hasFocus()){
+        if (m_window.hasFocus() && !flag){
             handle_mouse_rotation();
             handle_keyboard_movement(delta_time);
             draw();
         }
+        
+        flag = false;
     }
 }
 

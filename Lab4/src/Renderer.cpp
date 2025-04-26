@@ -50,21 +50,21 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
     const float z2 = s2.z;
     const float z3 = s3.z;
 
-    const float inv_z1 = 1.0f / s1.z;
-    const float inv_z2 = 1.0f / s2.z;
-    const float inv_z3 = 1.0f / s3.z;
+    const float inv_w1 = 1.0f / s1.w;
+    const float inv_w2 = 1.0f / s2.w;
+    const float inv_w3 = 1.0f / s3.w;
 
-    const glm::vec3 t1_persp = t1 * inv_z1;
-    const glm::vec3 t2_persp = t2 * inv_z2;
-    const glm::vec3 t3_persp = t3 * inv_z3;
+    const glm::vec3 t1_persp = t1 * inv_w1;
+    const glm::vec3 t2_persp = t2 * inv_w2;
+    const glm::vec3 t3_persp = t3 * inv_w3;
 
-    const glm::vec3 n1_persp = n1 * inv_z1;
-    const glm::vec3 n2_persp = n2 * inv_z2;
-    const glm::vec3 n3_persp = n3 * inv_z3;
+    const glm::vec3 n1_persp = n1 * inv_w1;
+    const glm::vec3 n2_persp = n2 * inv_w2;
+    const glm::vec3 n3_persp = n3 * inv_w3;
 
-    const glm::vec3 w1_persp = w1 * inv_z1;
-    const glm::vec3 w2_persp = w2 * inv_z2;
-    const glm::vec3 w3_persp = w3 * inv_z3;
+    const glm::vec3 w1_persp = w1 * inv_w1;
+    const glm::vec3 w2_persp = w2 * inv_w2;
+    const glm::vec3 w3_persp = w3 * inv_w3;
 
     const int total_height = y3 - y1;
     if (total_height == 0) return;
@@ -80,10 +80,15 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
         const float alpha = static_cast<float>(i) / total_height;
         const float beta = static_cast<float>(second_half ? (i - (y2 - y1)) : i) / segment_height;
 
-        float inv_zA = lerp(inv_z1, inv_z3, alpha);
-        float inv_zB = second_half 
-            ? lerp(inv_z2, inv_z3, beta)
-            : lerp(inv_z1, inv_z2, beta);
+        float inv_wA = lerp(inv_w1, inv_w3, alpha);
+        float inv_wB = second_half 
+            ? lerp(inv_w2, inv_w3, beta)
+            : lerp(inv_w1, inv_w2, beta);
+
+        float zA = lerp(z1, z3, alpha);
+        float zB = second_half 
+            ? lerp(z2, z3, beta)
+            : lerp(z1, z2, beta);
 
         glm::vec3 At_persp = lerp(t1_persp, t3_persp, alpha);
         glm::vec3 Bt_persp = second_half
@@ -109,7 +114,8 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
 
         if (Ax > Bx) {
             std::swap(Ax, Bx);
-            std::swap(inv_zA, inv_zB);
+            std::swap(zA, zB);
+            std::swap(inv_wA, inv_wB);
             std::swap(At_persp, Bt_persp);
             std::swap(An_persp, Bn_persp);
             std::swap(Aw_persp, Bw_persp);
@@ -121,18 +127,18 @@ void Renderer::draw_triangle(const Point* p1, const Point* p2, const Point* p3) 
 
         for (int x = min_x; x < max_x; ++x) {
             const float t = (x - Ax) / static_cast<float>(Bx - Ax);
-            const float inv_z = lerp(inv_zA, inv_zB, t);
-            const float z = 1.0f / inv_z;
+            const float inv_w = lerp(inv_wA, inv_wB, t);
+            const float z = lerp(zA, zB, t);
             
             if (z < m_z_buffer[index + x]) {
                 const glm::vec3 tex_persp = lerp(At_persp, Bt_persp, t);
-                const glm::vec3 tex_coord = tex_persp / inv_z;
+                const glm::vec3 tex_coord = tex_persp / inv_w;
 
                 const glm::vec3 normal_persp = lerp(An_persp, Bn_persp, t);
-                const glm::vec3 normal = glm::normalize(normal_persp / inv_z);
+                const glm::vec3 normal = glm::normalize(normal_persp / inv_w);
 
                 const glm::vec3 world_persp = lerp(Aw_persp, Bw_persp, t);
-                const glm::vec3 world = world_persp / inv_z;
+                const glm::vec3 world = world_persp / inv_w;
 
                 Point point{ 
                     world, 

@@ -18,7 +18,8 @@ public:
     const Vertices& get_texture_vertices() const;
 
 private:
-    constexpr static auto MODEL_FILE_PATH = "/home/fedar/Desktop/model.obj";
+    //constexpr static auto MODEL_FILE_PATH = "/home/fedar/Desktop/model.obj";
+    constexpr static auto MODEL_FILE_PATH = "../models/sahur/model.obj";
 
     glm::vec4 m_model_position, m_model_rotation;
     Points m_points;
