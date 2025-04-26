@@ -21,14 +21,16 @@ private:
     constexpr static float ks = 0.3;
     
     constexpr static Color::RGBA ia = Color::Basic::White;
-    constexpr static Color::RGBA id = Color::Basic::Red;
-    constexpr static Color::RGBA is = Color::Basic::Blue;
+    constexpr static Color::RGBA id = Color::Basic::White;
+    constexpr static Color::RGBA is = Color::Basic::White;
 
-    const std::string diffuse_path = "/home/fedar/Documents/BSUIR/AKG/models/sahur/diffuse.raw";
-    const std::string normal_path = "../models/sahur/texture_normal.png";
+    const std::string diffuse_path = "/home/fedar/Desktop/diffuse.raw";
+    //const std::string normal_path = "/home/fedar/Documents/BSUIR/AKG/models/sahur/normal.raw";
+    //const std::string specular_path = "/home/fedar/Documents/BSUIR/AKG/models/sahur/metallic.raw";
 
     std::vector<std::vector<uint32_t>> arr_diffuse;
     std::vector<std::vector<uint32_t>> arr_normal;
+    std::vector<std::vector<uint32_t>> arr_specular;
 
     glm::vec3 m_eye, m_sun;
 };
