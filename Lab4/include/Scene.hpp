@@ -20,7 +20,7 @@ public:
 private:
     constexpr static auto MODEL_FILE_PATH = "../models/model.obj";
 
-    glm::vec4 m_model_position, m_model_rotation;
+    glm::vec4 m_model_position{}, m_model_rotation{};
     Points m_points;
     Faces m_faces;
     Vertices m_normals, m_texture_vertices;

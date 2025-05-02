@@ -35,15 +35,13 @@ bool Scene::initialize() {
 }
 
 void Scene::rotate_model(const glm::vec4 &rotate_vector, float delta_time) {
-    m_model_rotation += rotate_vector * delta_time;
+    m_model_rotation = rotate_vector * delta_time;
     update_points();
-    m_model_rotation = {};
 }
 
 void Scene::move_model(const glm::vec4 &move_vector, float delta_time) {
-    m_model_position += move_vector * delta_time;
+    m_model_position = move_vector * delta_time;
     update_points();
-    m_model_position = {};
 }
 
 void Scene::update_points() {
@@ -63,6 +61,9 @@ void Scene::update_points() {
         normal4 = cached_matrix * normal4;
         normal = glm::vec3{normal4.x, normal4.y, normal4.z};
     });
+
+    m_model_position = {};
+    m_model_rotation = {};
 }
 
 Points Scene::get_points() const {

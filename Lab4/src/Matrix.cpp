@@ -4,7 +4,10 @@
 #include <cmath>
 #include <algorithm>
 
-static glm::mat4x4 create_rotation_matrix_x(float angle) {
+
+namespace {
+
+glm::mat4x4 create_rotation_matrix_x(float angle) {
     float c = std::cos(angle);
     float s = std::sin(angle);
     return glm::mat4x4{
@@ -15,7 +18,7 @@ static glm::mat4x4 create_rotation_matrix_x(float angle) {
     };
 }
 
-static glm::mat4x4 create_rotation_matrix_y(float angle) {
+glm::mat4x4 create_rotation_matrix_y(float angle) {
     float c = std::cos(angle);
     float s = std::sin(angle);
     return glm::mat4x4{
@@ -26,7 +29,7 @@ static glm::mat4x4 create_rotation_matrix_y(float angle) {
     };
 }
 
-static glm::mat4x4 create_rotation_matrix_z(float angle) {
+glm::mat4x4 create_rotation_matrix_z(float angle) {
     float c = std::cos(angle);
     float s = std::sin(angle);
     return glm::mat4x4{
@@ -35,6 +38,8 @@ static glm::mat4x4 create_rotation_matrix_z(float angle) {
         {0, 0, 1, 0},
         {0, 0, 0, 1}
     };
+}
+
 }
 
 glm::mat4x4 create_rotation_matrix(const glm::vec4& angles) {
