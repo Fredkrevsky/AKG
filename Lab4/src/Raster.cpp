@@ -7,8 +7,8 @@
 
 namespace {
 
-constexpr static int WIDTH = 1024 * 2;
-constexpr static int HEIGHT = 1024 * 2;
+constexpr static int WIDTH = 2048;
+constexpr static int HEIGHT = 2048;
 
 std::vector<std::vector<uint32_t>> load_texture(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
@@ -30,7 +30,7 @@ std::vector<std::vector<uint32_t>> load_texture(const std::string& filename) {
             uint8_t r = row_buffer[x*3];
             uint8_t g = row_buffer[x*3 + 1];
             uint8_t b = row_buffer[x*3 + 2];
-            texture[y][x] = (0xFF << 24) | (r << 16) | (g << 8) | b;
+            texture[y][x] = (0xFF << 24) | (b << 16) | (g << 8) | r;
         }
     }
 
@@ -103,7 +103,7 @@ Color::RGBA Raster::get_color(const Point& point) {
         return Ia;
     }
     
-    float diffuse_coef = kd * NL;
+    float diffuse_coef = kd * NL * 2;
     
     Color::RGBA Id = Color::multiply(DColor, diffuse_coef);
     
@@ -112,8 +112,6 @@ Color::RGBA Raster::get_color(const Point& point) {
     uint32_t spec_value = getPixel(arr_specular, texture.x, texture.y);
     float specular_intensity = (spec_value & 0xFF) / 255.0f; 
 
-    //float specular_intensity = 0.5f;
-    
     float specular_coef = ks * specular_intensity * std::pow(std::max(0.0f, glm::dot(N, H)), a);
     Color::RGBA Is = Color::multiply(is, specular_coef);
     

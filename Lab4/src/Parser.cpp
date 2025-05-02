@@ -55,22 +55,47 @@ void ParserOBJ::parse_file(const std::string& file_path) {
             m_vertices.push_back(vertex);
         } 
         else if (type == "f") {
-            Face face;
-            for (int i = 0; i < 3; ++i) {
-                std::string vertex_data;
-                iss >> vertex_data;
-                size_t pos1 = vertex_data.find('/');
-                size_t pos2 = vertex_data.find('/', pos1 + 1);
+            std::vector<std::array<uint32_t, 3>> face_vertices;
+            std::string vertex_data;
+            
+            while (iss >> vertex_data) {
+                std::vector<std::string> parts;
+                size_t start = 0;
+                size_t end = vertex_data.find('/');
+                
+                while (true) {
+                    parts.push_back(vertex_data.substr(start, end - start));
+                    if (end == std::string::npos) break;
+                    start = end + 1;
+                    end = vertex_data.find('/', start);
+                }
 
-                int a = std::stoi(vertex_data.substr(0, pos1));
-                int b = std::stoi(vertex_data.substr(pos1 + 1, pos2 - pos1 - 1));
-                int c = std::stoi(vertex_data.substr(pos2 + 1));
+                int v = 0, vt = 0, vn = 0;
 
-                face[i][0] = a - 1;
-                face[i][1] = b - 1;
-                face[i][2] = c - 1;
+                if (!parts[0].empty())
+                    v = std::stoi(parts[0]);
+                if (parts.size() > 1 && !parts[1].empty())
+                    vt = std::stoi(parts[1]);
+                if (parts.size() > 2 && !parts[2].empty())
+                    vn = std::stoi(parts[2]);
+
+                v = (v != 0) ? v - 1 : -1;
+                vt = (vt != 0) ? vt - 1 : -1;
+                vn = (vn != 0) ? vn - 1 : -1;
+
+                face_vertices.push_back({v, vt, vn});
             }
-            m_faces.push_back(face);
+
+            size_t num_verts = face_vertices.size();
+            if (num_verts < 3) continue;
+
+            for (size_t i = 1; i < num_verts - 1; ++i) {
+                Face face;
+                face[0] = face_vertices[0];
+                face[1] = face_vertices[i];
+                face[2] = face_vertices[i + 1];
+                m_faces.push_back(face);
+            }
         }
         else if (type == "vn") {
             glm::vec3 normal{0, 0, 0};

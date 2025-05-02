@@ -171,7 +171,7 @@ void MainForm::on_key_press(sf::Keyboard::Key code) {
     switch (code)
     {
         case sf::Keyboard::Q:
-            m_window.close();
+            // m_window.close();
             break;
     }
 }
