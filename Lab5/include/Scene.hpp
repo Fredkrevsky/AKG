@@ -3,13 +3,14 @@
 #include "Camera.hpp"
 #include "Point.hpp"
 
-class Scene final {
+class Scene {
 public:
     Scene() noexcept = default;
+    virtual ~Scene() = default;
 
     [[nodiscard]] bool initialize();
-    void rotate_model(const glm::vec4& rotate_vector, float delta_time);
-    void move_model(const glm::vec4& move_vector, float delta_time);
+    void rotate_model(const glm::vec3& rotate_vector);
+    void move_model(const glm::vec3& move_vector);
     void update_points();
 
     Points get_points() const;
@@ -20,7 +21,8 @@ public:
 private:
     constexpr static auto MODEL_FILE_PATH = "../model/model.obj";
 
-    glm::vec4 m_model_position{}, m_model_rotation{};
+    glm::vec3 m_model_position{};
+    glm::vec3 m_model_rotation{};
     Points m_points;
     Faces m_faces;
     Vertices m_normals, m_texture_vertices;

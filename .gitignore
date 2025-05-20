@@ -39,4 +39,4 @@ build/
 *.obj
 *.gltf
 *.bin
-models/
+model/

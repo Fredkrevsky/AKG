@@ -24,9 +24,9 @@ private:
     constexpr static Color::RGBA id = Color::Basic::White;
     constexpr static Color::RGBA is = Color::Basic::White;
 
-    const std::string diffuse_path = "../models/diffuse.raw";
-    const std::string normal_path = "../models/normal.raw";
-    const std::string specular_path = "../models/specular.raw";
+    const std::string diffuse_path = "../model/diffuse.raw";
+    const std::string normal_path = "../model/normal.raw";
+    const std::string specular_path = "../model/specular.raw";
 
     std::vector<std::vector<uint32_t>> arr_diffuse;
     std::vector<std::vector<uint32_t>> arr_normal;
