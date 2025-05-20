@@ -6,7 +6,6 @@
 #include "Scene.hpp"
 #include "Renderer.hpp"
 
-
 class MainForm final {
 public:
     MainForm() noexcept;

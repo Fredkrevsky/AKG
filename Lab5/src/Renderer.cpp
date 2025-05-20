@@ -16,6 +16,10 @@ T lerp(const T& a, const T& b, float t){
     return (1 - t) * a + t * b;
 }
 
+bool check_vertex(const ScreenVertex& vertex) {
+    return vertex.z >= -1 && vertex.z <= 1;
+}
+
 }
 
 Renderer::Renderer() noexcept
@@ -36,10 +40,10 @@ void Renderer::set_camera(std::shared_ptr<Camera> camera){
     m_camera = camera;
 }
 
-void Renderer::draw_triangle(const Point& p1, const Point& p2, const Point& p3) {
-    const Point* points[3] = {&p1, &p2, &p3};
+void Renderer::draw_triangle(const PointData& p1, const PointData& p2, const PointData& p3) {
+    const PointData* points[3] = {&p1, &p2, &p3};
     
-    std::sort(points, points + 3, [](const Point* a, const Point* b) {
+    std::sort(points, points + 3, [](const PointData* a, const PointData* b) {
         return a->screen.y < b->screen.y;
     });
 
@@ -147,13 +151,7 @@ void Renderer::draw_triangle(const Point& p1, const Point& p2, const Point& p3) 
                 const glm::vec3 world_persp = lerp(Aw_persp, Bw_persp, t);
                 const glm::vec3 world = world_persp / inv_w;
 
-                Point point{ 
-                    world, 
-                    glm::vec4{static_cast<float>(x), static_cast<float>(Ay), z, 1.0f},
-                    normal, 
-                    tex_coord 
-                };
-
+                Raster::PointData point{world, normal, tex_coord};
                 Color::RGBA color = m_raster.get_color(point);
                 m_data[index + x] = color;
                 m_z_buffer[index + x] = z;
@@ -162,22 +160,23 @@ void Renderer::draw_triangle(const Point& p1, const Point& p2, const Point& p3) 
     }
 }
 
-void Renderer::draw(Points&& points, const Faces& faces, const Vertices& normals, const Vertices& texture_vertices) {
+void Renderer::draw(const Vertices& vertices, const Faces& faces, 
+                    const Vertices& normals, const TextureVertices& texture_vertices) 
+{
     const glm::vec3 eye = m_camera->get_eye();
     m_raster.set_eye(eye);
     m_raster.set_sun(eye);
 
     clear_bitmap();
-    project_points(points);
-
-    auto check = [](const Point& vertex) -> bool {
-        return vertex.screen.z >= -1 && vertex.screen.z <= 1;
-    };
+    auto screen_vertices = get_screen_vertices(vertices);
 
     std::ranges::for_each(faces, [&](const Face& face) {
-        const auto& p1 = points[face[0][0]];
-        const auto& p2 = points[face[1][0]];
-        const auto& p3 = points[face[2][0]];
+        const auto& p1 = vertices[face[0][0]];
+        const auto& p2 = vertices[face[1][0]];
+        const auto& p3 = vertices[face[2][0]];
+        const auto& s1 = screen_vertices[face[0][0]];
+        const auto& s2 = screen_vertices[face[1][0]];
+        const auto& s3 = screen_vertices[face[2][0]];
         const auto& t1 = texture_vertices[face[0][1]];
         const auto& t2 = texture_vertices[face[1][1]];
         const auto& t3 = texture_vertices[face[2][1]];
@@ -185,10 +184,10 @@ void Renderer::draw(Points&& points, const Faces& faces, const Vertices& normals
         const auto& n2 = normals[face[1][2]];
         const auto& n3 = normals[face[2][2]];
 
-        if (check(p1) && check(p2) && check(p3)) {
-            Point p41{p1.world, p1.screen, n1, t1};
-            Point p42{p2.world, p2.screen, n2, t2};
-            Point p43{p3.world, p3.screen, n3, t3};
+        if (check_vertex(s1) && check_vertex(s2) && check_vertex(s3)) {
+            PointData p41{p1, s1, n1, t1};
+            PointData p42{p2, s2, n2, t2};
+            PointData p43{p3, s3, n3, t3};
         
             draw_triangle(p41, p42, p43);
         }
@@ -241,22 +240,24 @@ glm::mat4x4 Renderer::get_scale_matrix() const {
     }; 
 }
 
-void Renderer::project_points(Points& points) const {
+ScreenVertices Renderer::get_screen_vertices(const Vertices& vertices) const {
     const auto view_matrix = get_view_matrix();
     const auto viewport_matrix = get_viewport_matrix();
     const auto scale_matrix = get_scale_matrix();
     const auto projection_matrix = get_projection_matrix();
     const auto cached_matrix = glm::transpose(view_matrix * projection_matrix * viewport_matrix);
 
-    std::ranges::for_each(points, [&](Point& point) {
-        auto& [world, screen, normal, texture] = point;
-        glm::vec4 world4 = {world, 1.0};
-        screen = cached_matrix * world4;
-
+    ScreenVertices screen_vertices;
+    std::ranges::transform(vertices, std::back_inserter(screen_vertices), [&](const auto& vertex) {
+        glm::vec4 world = {vertex, 1.0};
+        glm::vec4 screen = cached_matrix * world;
         if (screen.w != 0) {
             screen.x /= screen.w;
             screen.y /= screen.w;
             screen.z /= screen.w;
         }
+        return screen;
     });
+
+    return screen_vertices;
 }

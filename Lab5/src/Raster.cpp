@@ -97,8 +97,8 @@ void Raster::set_sun(const glm::vec3& sun) {
     m_sun = sun;
 }
 
-Color::RGBA Raster::get_color(const Point& point) {
-    const auto& [world, screen, normal, texture] = point;
+Color::RGBA Raster::get_color(const PointData& point) {
+    const auto& [world, normal, texture] = point;
     
     Color::RGBA DColor = getPixel(arr_diffuse, texture.x, texture.y); 
     

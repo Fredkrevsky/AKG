@@ -18,18 +18,9 @@ bool Scene::initialize() {
 
     parser->parse_file(file_path);
     m_faces = parser->get_faces();
-    auto vertices = parser->get_vertices();
+    m_vertices = parser->get_vertices();
     m_normals = parser->get_normals();
     m_texture_vertices = parser->get_texture_vertices();
-
-    m_points.clear();
-    std::ranges::transform(vertices, std::back_inserter(m_points), [](const auto& vertex){
-        return Point{
-            vertex, 
-            glm::vec4{0, 0, 0, 1.0},
-            glm::vec4{} 
-        };
-    });
 
     update_points();
     return true;
@@ -50,25 +41,20 @@ void Scene::update_points() {
     auto rotation_matrix = create_rotation_matrix(m_model_rotation);
     auto cached_matrix = move_matrix * rotation_matrix;
 
-    std::ranges::for_each(m_points, [&](Point& point){
-        auto& [world, screen, normal, texture] = point;
-        glm::vec4 world4 = {world, 1.0};
-        world4 = cached_matrix * world4;
-        world = glm::vec3{world4};
+    std::ranges::transform(m_vertices, m_vertices.begin(), [&](const Vertex& vertex){
+        return glm::vec3{cached_matrix * glm::vec4{vertex, 1.0}};
     });
 
-    std::ranges::for_each(m_normals, [&](glm::vec3& normal){
-        glm::vec4 normal4 = {normal, 1.0};
-        normal4 = cached_matrix * normal4;
-        normal = glm::vec3{normal4};
+    std::ranges::transform(m_normals, m_normals.begin(), [&](const Vertex& normal){
+        return glm::vec3{cached_matrix * glm::vec4{normal, 1.0}};
     });
 
     m_model_position = {};
     m_model_rotation = {};
 }
 
-Points Scene::get_points() const {
-    return m_points;
+const Vertices& Scene::get_vertices() const {
+    return m_vertices;
 }
 
 const Faces& Scene::get_faces() const {
@@ -79,6 +65,6 @@ const Vertices& Scene::get_normals() const {
     return m_normals;
 }
 
-const Vertices& Scene::get_texture_vertices() const {
+const TextureVertices& Scene::get_texture_vertices() const {
     return m_texture_vertices;
 }

@@ -25,7 +25,7 @@ Vertices Parser::get_normals() const {
     return m_normals;
 }
 
-Vertices Parser::get_texture_vertices() const {
+TextureVertices Parser::get_texture_vertices() const {
     return m_texture_vertices;
 }
 
@@ -103,7 +103,7 @@ void ParserOBJ::parse_file(const std::string& file_path) {
             m_normals.push_back(normal);
         }
         else if (type == "vt") {
-            glm::vec3 texture_vertex{0, 0, 0};
+            glm::vec2 texture_vertex{};
             iss >> texture_vertex.x >> texture_vertex.y;
             m_texture_vertices.push_back(texture_vertex);
         }

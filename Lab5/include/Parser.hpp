@@ -16,13 +16,13 @@ public:
     Vertices get_vertices() const;
     Faces get_faces() const;
     Vertices get_normals() const;
-    Vertices get_texture_vertices() const;
+    TextureVertices get_texture_vertices() const;
     
 protected:
     Vertices m_vertices;
     Faces m_faces;
     Vertices m_normals;
-    Vertices m_texture_vertices;
+    TextureVertices m_texture_vertices;
 };
 
 class ParserOBJ final : public Parser {
