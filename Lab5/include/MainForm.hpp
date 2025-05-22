@@ -31,5 +31,4 @@ private:
     sf::Vector2i m_mouse_press_position{};
     sf::Vector2i m_center{};
     float m_delta_time{1.0};
-    bool m_needs_update{true};
 };

@@ -161,7 +161,8 @@ void Renderer::draw_triangle(const PointData& p1, const PointData& p2, const Poi
 }
 
 void Renderer::draw(const Vertices& vertices, const Faces& faces, 
-                    const Vertices& normals, const TextureVertices& texture_vertices) 
+                    const Vertices& normals, const TextureVertices& texture_vertices,
+                    const Mtls& mtls) 
 {
     const glm::vec3 eye = m_camera->get_eye();
     m_raster.set_eye(eye);
@@ -170,7 +171,18 @@ void Renderer::draw(const Vertices& vertices, const Faces& faces,
     clear_bitmap();
     auto screen_vertices = get_screen_vertices(vertices);
 
+    int mtl_index = 0;
+    int mtl_count = 0;
+
+    m_raster.reset_texture();
+    
     std::ranges::for_each(faces, [&](const Face& face) {
+        if (mtl_count == mtls[mtl_index]){
+            mtl_index++;
+            m_raster.next_texture();
+            mtl_count = 0;
+        }
+        
         const auto& p1 = vertices[face[0][0]];
         const auto& p2 = vertices[face[1][0]];
         const auto& p3 = vertices[face[2][0]];
@@ -191,6 +203,8 @@ void Renderer::draw(const Vertices& vertices, const Faces& faces,
         
             draw_triangle(p41, p42, p43);
         }
+        
+        mtl_count++;
     });
 }
 
@@ -249,7 +263,7 @@ ScreenVertices Renderer::get_screen_vertices(const Vertices& vertices) const {
 
     ScreenVertices screen_vertices;
     std::ranges::transform(vertices, std::back_inserter(screen_vertices), [&](const auto& vertex) {
-        glm::vec4 world = {vertex, 1.0};
+        glm::vec4 world = {vertex, 1.0f};
         glm::vec4 screen = cached_matrix * world;
         if (screen.w != 0) {
             screen.x /= screen.w;

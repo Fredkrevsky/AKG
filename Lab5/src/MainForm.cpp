@@ -21,7 +21,6 @@ MainForm::MainForm() noexcept
     , m_camera(std::make_shared<Camera>())
     , m_counter(std::make_shared<FPSCounter>())
     , m_center(WIDTH / 2, HEIGHT / 2)
-    , m_needs_update(true)
 { 
     m_window.setMouseCursorVisible(false);
     m_window.setFramerateLimit(MAX_FPS);
@@ -57,8 +56,7 @@ void MainForm::run_main_loop() {
                 case sf::Event::MouseWheelScrolled:
                     if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
                         bool mode = event.mouseWheelScroll.delta >= 0;
-                        m_camera->scale(mode);
-                        m_needs_update = true;
+                        //m_camera->scale(mode);
                     }
                     break;
 
@@ -87,15 +85,15 @@ void MainForm::run_main_loop() {
 void MainForm::draw() {
     static sf::Sprite sprite{m_texture};
 
-    if (m_needs_update) {
-        const auto& vertices = m_scene.get_vertices();
-        const auto& faces = m_scene.get_faces();
-        const auto& normals = m_scene.get_normals();
-        const auto& texture_vertices = m_scene.get_texture_vertices();
-        m_renderer.draw(vertices, faces, normals, texture_vertices);
-        m_texture.update(m_renderer.data());
-        m_needs_update = false;
-    }
+    const auto& vertices = m_scene.get_vertices();
+    const auto& faces = m_scene.get_faces();
+    const auto& normals = m_scene.get_normals();
+    const auto& texture_vertices = m_scene.get_texture_vertices();
+    const auto& mtls = m_scene.get_mtls();
+    m_scene.update();
+    
+    m_renderer.draw(vertices, faces, normals, texture_vertices, mtls);
+    m_texture.update(m_renderer.data());
 
     m_window.clear();
     m_window.draw(sprite);
@@ -117,7 +115,6 @@ void MainForm::handle_mouse() {
         float angle_y = delta_y * MOUSE_SENSITIVITY;
 
         m_camera->rotate(glm::vec3{angle_x, angle_y, 0.f});
-        m_needs_update = true;
 
         sf::Mouse::setPosition(m_center, m_window);
     }
@@ -155,8 +152,6 @@ void MainForm::handle_keyboard() {
         const auto& [key, direction] = element;
         if (sf::Keyboard::isKeyPressed(key)) {
             m_camera->move(direction * m_delta_time);
-            m_scene.update_points();
-            m_needs_update = true;
         }
     });
 
@@ -164,7 +159,6 @@ void MainForm::handle_keyboard() {
         const auto& [key, rotation] = element;
         if (sf::Keyboard::isKeyPressed(key)) {
             m_scene.rotate_model(rotation * m_delta_time);
-            m_needs_update = true;
         }
     });
 
@@ -172,7 +166,6 @@ void MainForm::handle_keyboard() {
         const auto& [key, move] = element;
         if (sf::Keyboard::isKeyPressed(key)) {
             m_scene.move_model(move * m_delta_time);
-            m_needs_update = true;
         }
     });
 }

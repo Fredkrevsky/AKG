@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <vector>
+#include <string>
 #include <cmath>
 #include <cstdint>
 #include <numbers>
@@ -16,6 +17,7 @@ using Faces = std::vector<Face>;
 using Vertices = std::vector<Vertex>;
 using ScreenVertices = std::vector<ScreenVertex>;
 using TextureVertices = std::vector<TextureVertex>;
+using Mtls = std::vector<int>;
 
 constexpr float PI = std::numbers::pi_v<float>;
 constexpr float TWO_PI = 2.f * PI;

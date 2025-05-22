@@ -29,6 +29,10 @@ TextureVertices Parser::get_texture_vertices() const {
     return m_texture_vertices;
 }
 
+Mtls Parser::get_mtls() const {
+    return m_mtls;
+}
+
 std::string Parser::get_format(const std::string& path) {
     std::size_t dot_index = path.find_last_of(".");
     if (dot_index == std::string::npos) {
@@ -37,12 +41,18 @@ std::string Parser::get_format(const std::string& path) {
     return path.substr(dot_index + 1);
 }
 
-
 void ParserOBJ::parse_file(const std::string& file_path) {
     std::ifstream file(file_path);
     if (!file.is_open()) { return; }
 
+    m_faces.clear();
+    m_vertices.clear();
+    m_normals.clear();
+    m_texture_vertices.clear();
+    m_mtls.clear();
+
     std::string line;
+    int index = 0;
 
     while (std::getline(file, line)) {
         std::istringstream iss(line);
@@ -55,6 +65,7 @@ void ParserOBJ::parse_file(const std::string& file_path) {
             m_vertices.push_back(vertex);
         } 
         else if (type == "f") {
+            index++;
             std::vector<std::array<uint32_t, 3>> face_vertices;
             std::string vertex_data;
             
@@ -107,5 +118,14 @@ void ParserOBJ::parse_file(const std::string& file_path) {
             iss >> texture_vertex.x >> texture_vertex.y;
             m_texture_vertices.push_back(texture_vertex);
         }
+        else if (type == "usemtl") {
+            m_mtls.push_back(index);
+            index = 0;
+        }
     }
+
+    for (int i = 0; i < m_mtls.size() - 1; ++i){
+        m_mtls[i] = m_mtls[i + 1];
+    }
+    m_mtls[m_mtls.size() - 1] = INT_MAX;
 }

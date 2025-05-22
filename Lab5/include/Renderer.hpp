@@ -22,7 +22,9 @@ public:
     void draw(const Vertices& vertices, 
               const Faces& faces,
               const Vertices& normals, 
-              const TextureVertices& texture_vertices);
+              const TextureVertices& texture_vertices,
+              const Mtls& mtls
+            );
 
 private:
     glm::mat4x4 get_view_matrix() const;

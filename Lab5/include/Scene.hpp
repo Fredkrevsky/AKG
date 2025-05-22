@@ -1,6 +1,15 @@
 #pragma once
 #include "Parser.hpp"
 #include "Camera.hpp"
+#include <SFML/System/Clock.hpp>
+
+struct Model {
+    Vertices m_vertices;
+    Faces m_faces;
+    Vertices m_normals;
+    TextureVertices m_texture_vertices;
+    Mtls m_mtls;
+};
 
 class Scene {
 public:
@@ -10,20 +19,20 @@ public:
     [[nodiscard]] bool initialize();
     void rotate_model(const glm::vec3& rotate_vector);
     void move_model(const glm::vec3& move_vector);
-    void update_points();
+    void update();
 
-    const Vertices& get_vertices() const;
+    Vertices get_vertices() const;
     const Faces& get_faces() const;
-    const Vertices& get_normals() const;
+    Vertices get_normals() const;
     const TextureVertices& get_texture_vertices() const;
+    const Mtls& get_mtls() const;
 
 private:
-    constexpr static auto MODEL_FILE_PATH = "../model/model.obj";
-
     glm::vec3 m_model_position{};
     glm::vec3 m_model_rotation{};
-    Vertices m_vertices;
-    Faces m_faces;
-    Vertices m_normals;
-    TextureVertices m_texture_vertices;
+    std::vector<Model> m_models;
+    int m_index{};
+
+    sf::Clock m_clock;
+    sf::Time m_elapsed_time{};
 };
